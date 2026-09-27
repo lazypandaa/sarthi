@@ -2,15 +2,46 @@ package ai.sarthi.app.data.model
 
 import com.google.gson.annotations.SerializedName
 
+data class HindsightMemoryItem(
+    @SerializedName("id")
+    val id: String? = null,
+    @SerializedName("text")
+    val text: String,
+    @SerializedName("type")
+    val type: String,
+    @SerializedName("source")
+    val source: String? = "Farmer Query",
+    @SerializedName("crop")
+    val crop: String? = null,
+    @SerializedName("reason")
+    val reason: String? = null
+)
+
+data class MemorySections(
+    @SerializedName("past_experience")
+    val pastExperience: List<HindsightMemoryItem> = emptyList(),
+    @SerializedName("learned_from_you")
+    val learnedFromYou: List<HindsightMemoryItem> = emptyList()
+)
+
+data class WhatChangedItem(
+    @SerializedName("trigger")
+    val trigger: String,
+    @SerializedName("summary")
+    val summary: String,
+    @SerializedName("impact")
+    val impact: String
+)
+
 data class MemorySummaryResponse(
     @SerializedName("farmer_id")
-    val farmerId: String,
-    @SerializedName("total_memories")
-    val totalMemories: Int = 0,
-    @SerializedName("categories")
-    val categories: Map<String, Int> = emptyMap(),
-    @SerializedName("hindsight_status")
-    val hindsightStatus: String = "online"
+    val farmerId: String = "",
+    @SerializedName("memory_count")
+    val memoryCount: Int = 4,
+    @SerializedName("sections")
+    val sections: MemorySections = MemorySections(),
+    @SerializedName("what_changed")
+    val whatChanged: List<WhatChangedItem> = emptyList()
 )
 
 data class TeachMemoryRequest(

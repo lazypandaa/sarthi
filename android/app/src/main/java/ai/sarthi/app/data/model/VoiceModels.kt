@@ -62,12 +62,12 @@ data class VoiceAssistantResponse(
 data class QueryHistoryItem(
     @SerializedName("query_id")
     val queryId: String,
-    @SerializedName("query_text")
-    val queryText: String,
-    @SerializedName("response_text")
-    val responseText: String,
-    @SerializedName("language")
-    val language: String,
+    @SerializedName("query")
+    val query: String,
+    @SerializedName("response")
+    val response: String,
     @SerializedName("timestamp")
-    val timestamp: String
+    val timestamp: String? = null,
+    @SerializedName("language")
+    val language: String = "hi"
 )
