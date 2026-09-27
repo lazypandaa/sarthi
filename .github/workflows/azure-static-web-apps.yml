@@ -43,6 +43,7 @@ jobs:
           azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN || '785da0e8a755b4dc35416351c75d231eedde48dab990b1ef85aa3e20c0d08bb802-5c8cfcb8-eca3-437c-8422-26c2ef90256700017270ae45df00' }}
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           action: "upload"
-          app_location: "frontend"
-          output_location: "dist"
+          app_location: "/frontend/dist"
+          api_location: ""
+          output_location: ""
           skip_app_build: true
