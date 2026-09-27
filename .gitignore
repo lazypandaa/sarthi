@@ -47,6 +47,8 @@ frontend/.vite/
 .DS_Store
 Thumbs.db
 Screenshot*
+!docs/screenshots/
+!docs/screenshots/*.png
 *.png.tmp
 
 # Logs
@@ -67,3 +69,6 @@ venv/
 
 # MD5 fingerprint cache
 *.md5
+
+# Android APKs
+*.apk

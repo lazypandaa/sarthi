@@ -13,6 +13,27 @@
 
 ---
 
+## 📸 Screenshots
+
+<table>
+  <tr>
+    <td align="center" width="40%">
+      <img src="docs/screenshots/mobile-home.png" alt="Sarthi Mobile App – Home Screen" width="300"/>
+      <br/><b>📱 Mobile App (Android / PWA)</b>
+      <br/><sub>Voice-first home with live weather, memory-informed crop recommendation, and 5-tab navigation</sub>
+    </td>
+    <td align="center" width="60%">
+      <img src="docs/screenshots/desktop-home.png" alt="Sarthi Web App – Desktop Home Screen" width="600"/>
+      <br/><b>🖥️ Web App (Desktop)</b>
+      <br/><sub>Full-width dashboard with sidebar navigation, live Agmarknet mandi rates, and Hindsight memory panel</sub>
+    </td>
+  </tr>
+</table>
+
+> 🌐 **Live Demo**: [https://calm-plant-0ae45df00.2.azurestaticapps.net](https://calm-plant-0ae45df00.2.azurestaticapps.net) &nbsp;|&nbsp; ⚙️ **API**: [https://sarthi-api.azurewebsites.net/docs](https://sarthi-api.azurewebsites.net/docs) &nbsp;|&nbsp; 📦 **Android APK**: [Download Sarthi-v1.0.apk](https://github.com/lazypandaa/sarthi/releases)
+
+---
+
 ## 🏆 Why Sarthi Achieves Unrivaled Accuracy: Grounded in Real Agricultural Data
 
 Most agricultural chatbots fail in the field because they rely on general-purpose LLMs that **hallucinate soil chemistry, invent fictional planting dates, and fabricate market prices**. 
