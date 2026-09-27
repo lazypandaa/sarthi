@@ -17,15 +17,15 @@
 
 <table>
   <tr>
-    <td align="center" width="40%">
-      <img src="docs/screenshots/mobile-home.png" alt="Sarthi Mobile App – Home Screen" width="300"/>
-      <br/><b>📱 Mobile App (Android / PWA)</b>
-      <br/><sub>Voice-first home with live weather, memory-informed crop recommendation, and 5-tab navigation</sub>
-    </td>
-    <td align="center" width="60%">
-      <img src="docs/screenshots/desktop-home.png" alt="Sarthi Web App – Desktop Home Screen" width="600"/>
+    <td align="center" width="65%">
+      <img src="docs/screenshots/desktop-home.png" alt="Sarthi Web App – Desktop Home Screen" height="500"/>
       <br/><b>🖥️ Web App (Desktop)</b>
       <br/><sub>Full-width dashboard with sidebar navigation, live Agmarknet mandi rates, and Hindsight memory panel</sub>
+    </td>
+    <td align="center" width="35%">
+      <img src="docs/screenshots/mobile-home.png" alt="Sarthi Mobile App – Home Screen" height="500"/>
+      <br/><b>📱 Mobile App (Android / PWA)</b>
+      <br/><sub>Voice-first home with live weather, memory-informed crop recommendation, and 5-tab navigation</sub>
     </td>
   </tr>
 </table>
