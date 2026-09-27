@@ -191,11 +191,91 @@ def translate_to_english(text: str, source_lang: str) -> str:
         print(f"Translation error: {e}")
         return text
 
+SARVAM_API_KEY = os.getenv("SARVAM_API_KEY")
+
+SARVAM_TTS_LANGUAGES = {
+    "en": "en-IN",
+    "hi": "hi-IN",
+    "ta": "ta-IN",
+    "te": "te-IN",
+    "kn": "kn-IN",
+    "ml": "ml-IN",
+    "bn": "bn-IN",
+    "gu": "gu-IN",
+    "mr": "mr-IN",
+    "pa": "pa-IN",
+    "od": "od-IN",
+}
+
+SARVAM_TTS_SPEAKERS = {
+    "te": "kavitha",
+    "ta": "gokul",
+    "kn": "chaitra",
+    "mr": "soham",
+    "gu": "pooja",
+    "bn": "roopa",
+    "hi": "shubh",
+    "en": "shubh",
+}
+
+def synthesize_sarvam(text: str, language: str) -> Optional[str]:
+    """Synthesize speech using Sarvam AI Bulbul TTS (v3)"""
+    sarvam_key = os.getenv("SARVAM_API_KEY") or SARVAM_API_KEY
+    if not sarvam_key or not text:
+        return None
+
+    # Clean text of markdown formatting for natural spoken speech
+    clean_text = text.replace("*", "").replace("#", "").replace("`", "").replace(">", "").strip()
+    if len(clean_text) > 2400:
+        clean_text = clean_text[:2400] + "..."
+
+    target_lang = SARVAM_TTS_LANGUAGES.get(language, "hi-IN" if language != "en" else "en-IN")
+    speaker = SARVAM_TTS_SPEAKERS.get(language, "shubh")
+
+    try:
+        headers = {
+            "api-subscription-key": sarvam_key,
+            "Content-Type": "application/json"
+        }
+        payload = {
+            "inputs": [clean_text],
+            "target_language_code": target_lang,
+            "speaker": speaker,
+            "model": "bulbul:v3",
+            "pace": 1.0,
+            "speech_sample_rate": 16000,
+            "enable_preprocessing": True
+        }
+        resp = requests.post(
+            "https://api.sarvam.ai/text-to-speech",
+            headers=headers,
+            json=payload,
+            timeout=15
+        )
+        if resp.status_code == 200:
+            res_data = resp.json()
+            audios = res_data.get("audios", [])
+            if audios and len(audios) > 0 and audios[0]:
+                print(f"Sarvam Bulbul TTS success: lang={target_lang}, speaker={speaker}, audio_bytes={len(audios[0])}")
+                return audios[0]
+            print("Sarvam TTS returned empty audios array")
+        else:
+            print(f"Sarvam TTS error {resp.status_code}: {resp.text}")
+    except Exception as e:
+        print(f"Sarvam TTS exception: {e}")
+
+    return None
+
 def synthesize_speech(text: str, language: str) -> Optional[str]:
     if not text:
         return None
     
-    # Try Azure Speech for regional languages if available and configured
+    # 1. Primary: Sarvam AI Bulbul TTS (State-of-the-art for Indic languages & Indian English)
+    sarvam_audio = synthesize_sarvam(text, language)
+    if sarvam_audio:
+        return sarvam_audio
+
+    # 2. Secondary: Azure Speech for regional languages if available and configured
     if AZURE_SPEECH_AVAILABLE and language in AZURE_SPEECH_VOICES:
         try:
             speech_key = os.getenv("AZURE_SPEECH_KEY")
@@ -219,7 +299,7 @@ def synthesize_speech(text: str, language: str) -> Optional[str]:
         except Exception as e:
             print(f"Azure Speech synthesis error: {e}, falling back to Polly")
     
-    # Use AWS Polly as default/fallback for all languages
+    # 3. Tertiary: AWS Polly as fallback for all languages
     try:
         voice_config = LANGUAGE_TO_POLLY_VOICE.get(language, ("Joanna", "en-US"))
         voice_id, language_code = voice_config

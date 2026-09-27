@@ -3,6 +3,7 @@ import time
 import uuid
 import tempfile
 import subprocess
+import requests
 from typing import Optional
 from fastapi import HTTPException
 
@@ -30,6 +31,7 @@ except ImportError:
 
 class TranscribeService:
     def __init__(self):
+        self.sarvam_key = os.getenv("SARVAM_API_KEY")
         self.azure_speech_key = os.getenv("AZURE_SPEECH_KEY")
         self.azure_speech_region = os.getenv("AZURE_SPEECH_REGION", "centralindia")
         
@@ -86,6 +88,54 @@ class TranscribeService:
         with tempfile.NamedTemporaryFile(suffix=".wav", delete=False) as fallback_f:
             fallback_f.write(audio_bytes)
             return fallback_f.name
+
+    def transcribe_sarvam(self, wav_path: str, language: str = "hi") -> Optional[str]:
+        """Transcribe audio using Sarvam AI STT API (saaras:v3)"""
+        if not self.sarvam_key:
+            return None
+
+        sarvam_lang_map = {
+            "en": "en-IN",
+            "hi": "hi-IN",
+            "ta": "ta-IN",
+            "te": "te-IN",
+            "kn": "kn-IN",
+            "ml": "ml-IN",
+            "bn": "bn-IN",
+            "gu": "gu-IN",
+            "mr": "mr-IN",
+            "pa": "pa-IN",
+            "od": "od-IN",
+        }
+        lang_code = sarvam_lang_map.get(language, "hi-IN")
+
+        try:
+            with open(wav_path, "rb") as f:
+                headers = {"api-subscription-key": self.sarvam_key}
+                files = {"file": ("recording.wav", f, "audio/wav")}
+                data = {
+                    "model": "saaras:v3",
+                    "language_code": lang_code,
+                }
+                resp = requests.post(
+                    "https://api.sarvam.ai/speech-to-text",
+                    headers=headers,
+                    files=files,
+                    data=data,
+                    timeout=20,
+                )
+                if resp.status_code == 200:
+                    result = resp.json()
+                    transcript = result.get("transcript", "").strip()
+                    if transcript:
+                        print(f"Sarvam STT success ({lang_code}): {transcript[:60]}...")
+                        return transcript
+                else:
+                    print(f"Sarvam STT returned status {resp.status_code}: {resp.text}")
+        except Exception as e:
+            print(f"Sarvam STT error: {e}")
+
+        return None
 
     def transcribe_azure_speech(self, wav_path: str, language: str = "hi") -> Optional[str]:
         """Transcribe audio using Azure Speech Services SDK"""
@@ -195,24 +245,29 @@ class TranscribeService:
         return None
 
     async def transcribe_audio(self, file_bytes: bytes, file_extension: str, language: str = "hi") -> str:
-        """Complete resilient transcription workflow across Azure Speech, Whisper, and AWS"""
+        """Complete resilient transcription workflow across Sarvam AI, Azure Speech, Whisper, and AWS"""
         if not file_bytes:
             raise HTTPException(status_code=400, detail="Empty audio recording received")
 
         wav_path = self._convert_to_16k_wav(file_bytes, file_extension)
 
         try:
-            # 1. Try Azure Speech SDK (fastest, optimized for Indian languages)
+            # 1. Try Sarvam AI (Best for Indian regional languages & Indic English)
+            transcript = self.transcribe_sarvam(wav_path, language)
+            if transcript:
+                return transcript
+
+            # 2. Try Azure Speech SDK (fast fallback, optimized for Indian languages)
             transcript = self.transcribe_azure_speech(wav_path, language)
             if transcript:
                 return transcript
 
-            # 2. Try Azure OpenAI Whisper
+            # 3. Try Azure OpenAI Whisper
             transcript = self.transcribe_whisper(wav_path, language)
             if transcript:
                 return transcript
 
-            # 3. Try AWS Transcribe
+            # 4. Try AWS Transcribe
             transcript = self.transcribe_aws(file_bytes, file_extension, language)
             if transcript:
                 return transcript
