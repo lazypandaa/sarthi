@@ -44,6 +44,7 @@ function App() {
   const [feedbackModalMode, setFeedbackModalMode] = useState('simple')
   const [currentQueryId, setCurrentQueryId] = useState(null)
   const [feedbackText, setFeedbackText] = useState('')
+  const [authDemoCreds, setAuthDemoCreds] = useState(null)
 
   const mediaRecorderRef = useRef(null)
   const audioRef = useRef(null)
@@ -569,11 +570,20 @@ function App() {
   }
 
   if (showLanding && !isAuthenticated) {
-    return <Landing onGetStarted={() => setShowLanding(false)} onLogin={handleLogin} isAuthenticated={isAuthenticated} />
+    return (
+      <Landing 
+        onGetStarted={(creds) => {
+          if (creds) setAuthDemoCreds(creds)
+          setShowLanding(false)
+        }} 
+        onLogin={handleLogin} 
+        isAuthenticated={isAuthenticated} 
+      />
+    )
   }
 
   if (!isAuthenticated) {
-    return <Auth onLogin={handleLogin} />
+    return <Auth onLogin={handleLogin} demoCredentials={authDemoCreds} />
   }
 
   if (!user) {

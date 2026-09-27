@@ -12,6 +12,12 @@ function Landing({ onGetStarted, onLogin, isAuthenticated = false }) {
       onGetStarted()
       return
     }
+    // Mobile view: open dedicated full-screen auth page
+    if (window.innerWidth <= 768) {
+      if (onGetStarted) onGetStarted()
+      return
+    }
+    // Desktop: smooth-scroll to embedded auth card in right column
     if (authCardRef.current) {
       authCardRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' })
       const phoneInput = authCardRef.current.querySelector('input[name="phone_number"]')
@@ -33,10 +39,17 @@ function Landing({ onGetStarted, onLogin, isAuthenticated = false }) {
       onGetStarted()
       return
     }
-    setDemoCredentials({
+    const demoCreds = {
       phone_number: '+919999999001',
       password: 'demoPassword123!'
-    })
+    }
+    // Mobile view: open dedicated screen with demo credentials pre-filled
+    if (window.innerWidth <= 768) {
+      if (onGetStarted) onGetStarted(demoCreds)
+      return
+    }
+    // Desktop: prefill embedded card and focus
+    setDemoCredentials(demoCreds)
     if (authCardRef.current) {
       authCardRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' })
       authCardRef.current.classList.add('hero-auth-pulse')

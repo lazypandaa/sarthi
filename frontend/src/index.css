@@ -2612,13 +2612,7 @@ body {
   }
 
   .hero-right-column {
-    max-width: 100%;
-    flex: 1 1 100%;
-  }
-
-  .auth-card.auth-card-embedded {
-    max-width: 420px;
-    padding: 28px 20px;
+    display: none !important;
   }
 
   .features-grid-modern {

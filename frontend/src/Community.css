@@ -971,16 +971,151 @@
 }
 
 @media (max-width: 768px) {
-  .community-tabs {
-    flex-direction: column;
+  .community-container {
+    overflow-x: hidden;
+    width: 100%;
   }
-  
+
+  .community-content {
+    padding: 20px 12px 100px;
+    width: 100%;
+    box-sizing: border-box;
+    overflow-x: hidden;
+  }
+
+  .community-header h1 {
+    font-size: 1.65rem;
+    line-height: 1.25;
+    word-break: break-word;
+    margin-bottom: 8px;
+  }
+
+  .community-header p {
+    font-size: 0.9rem;
+    line-height: 1.45;
+    padding: 0 4px;
+    margin-bottom: 16px;
+    word-break: break-word;
+  }
+
+  /* Sleek Swiggy/Zomato style horizontal scrollable tabs */
+  .community-tabs {
+    flex-direction: row;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    white-space: nowrap;
+    gap: 8px;
+    padding: 6px;
+    margin-bottom: 18px;
+    border-radius: 12px;
+  }
+
+  .community-tabs::-webkit-scrollbar {
+    display: none;
+  }
+
+  .tab {
+    flex: 0 0 auto;
+    padding: 10px 14px;
+    font-size: 0.85rem;
+    gap: 6px;
+    border-radius: 8px;
+  }
+
+  /* Sleek horizontal scrollable category pills */
+  .category-pills {
+    display: flex;
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    gap: 8px;
+    padding-bottom: 4px;
+    margin-bottom: 16px;
+  }
+
+  .category-pills::-webkit-scrollbar {
+    display: none;
+  }
+
+  .filter-pill {
+    flex: 0 0 auto;
+    white-space: nowrap;
+    padding: 6px 12px;
+    font-size: 0.8rem;
+  }
+
   .reports-grid,
   .outbreaks-grid {
     grid-template-columns: 1fr;
+    gap: 14px;
+    width: 100%;
+    box-sizing: border-box;
   }
-  
+
+  .report-card {
+    padding: 16px 14px;
+    width: 100%;
+    box-sizing: border-box;
+    border-radius: 12px;
+    overflow: hidden;
+  }
+
+  .report-header {
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: center;
+  }
+
+  .report-header-left {
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .report-header-right {
+    flex-shrink: 0;
+  }
+
+  .report-body h4 {
+    font-size: 1.05rem;
+    word-break: break-word;
+  }
+
+  .report-body p {
+    font-size: 0.9rem;
+    line-height: 1.45;
+    word-break: break-word;
+  }
+
   .outbreak-kpis {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+    margin-bottom: 16px;
+  }
+
+  .kpi-card {
+    padding: 14px 10px;
+  }
+
+  .kpi-value {
+    font-size: 1.5rem;
+  }
+
+  .kpi-label {
+    font-size: 0.75rem;
+  }
+
+  .outbreak-card,
+  .leaderboard-card {
+    padding: 14px;
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  .modal-content {
+    margin: 10px;
+    max-height: 90vh;
+    overflow-y: auto;
   }
 }

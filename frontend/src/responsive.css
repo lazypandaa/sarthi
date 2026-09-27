@@ -143,12 +143,14 @@ body {
   bottom: 0;
   left: 0;
   right: 0;
-  height: var(--bottom-nav-height);
-  background: var(--surface);
-  border-top: 1px solid var(--border);
-  padding: var(--space-sm) 0;
+  height: 58px;
+  background: rgba(255, 255, 255, 0.96);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-top: 1px solid rgba(226, 232, 240, 0.8);
+  padding: 4px 2px;
   z-index: 1000;
-  box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.06);
   display: flex;
   justify-content: space-around;
   align-items: center;
@@ -160,24 +162,33 @@ body {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: var(--space-xs);
-  padding: var(--space-sm);
+  gap: 2px;
+  padding: 2px 1px;
   background: transparent;
   border: none;
-  color: var(--text-secondary);
-  font-size: var(--text-xs);
+  color: #64748b;
+  font-size: 10px;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s ease;
-  min-height: var(--touch-target);
-  max-width: 5rem;
+  min-height: 44px;
+  max-width: 52px;
+}
+
+.mobile-nav-item span {
+  font-size: 10px;
+  white-space: nowrap;
+  line-height: 1.1;
 }
 
 .mobile-nav-item.active {
-  color: var(--primary);
+  color: #059669;
+  font-weight: 700;
 }
 
 .mobile-nav-item svg {
+  width: 19px;
+  height: 19px;
   stroke-width: 2;
 }
 

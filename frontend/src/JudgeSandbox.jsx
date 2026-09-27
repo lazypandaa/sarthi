@@ -186,22 +186,14 @@ export default function JudgeSandbox({ user, onNavigate, onLogout, language = 'e
   const currentSc = scenarios[selectedScenarioIndex]
 
   return (
-    <div style={{ maxWidth: '1240px', margin: '0 auto', padding: '16px', paddingTop: '80px', paddingBottom: '90px' }}>
+    <div className="judge-container">
       <Navbar user={user} activePage="judge" onNavigate={onNavigate} onLogout={onLogout} language={language} />
 
       {/* Hero Badge */}
-      <div style={{
-        background: 'linear-gradient(135deg, #064e3b 0%, #047857 50%, #059669 100%)',
-        color: 'white',
-        borderRadius: '16px',
-        padding: '24px 20px',
-        marginBottom: '20px',
-        boxShadow: '0 8px 30px rgba(6, 78, 59, 0.25)',
-        border: '1px solid rgba(255, 255, 255, 0.15)'
-      }}>
+      <div className="judge-hero">
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px' }}>
           <div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px', flexWrap: 'wrap' }}>
               <span style={{
                 background: '#fef08a',
                 color: '#854d0e',
@@ -225,15 +217,15 @@ export default function JudgeSandbox({ user, onNavigate, onLogout, language = 'e
                 Hindsight Cloud Powered
               </span>
             </div>
-            <h1 style={{ fontSize: '24px', fontWeight: 800, margin: '4px 0 8px', letterSpacing: '-0.5px' }}>
+            <h1 className="judge-hero-title">
               🌾 Sarthi: Autonomous AI Agent with Real-World Farm Memory
             </h1>
-            <p style={{ margin: 0, fontSize: '14px', opacity: 0.92, maxWidth: '850px', lineHeight: 1.5 }}>
+            <p className="judge-hero-desc">
               This interactive sandbox demonstrates how <strong>Hindsight long-term memory</strong> transforms stateless agricultural AI into an adaptive farming partner that remembers operational constraints, learns from crop failures, and prevents costly mistakes across seasons.
             </p>
           </div>
 
-          <div style={{ display: 'flex', gap: '8px' }}>
+          <div style={{ display: 'flex', gap: '8px', flexShrink: 0 }}>
             <button
               onClick={() => runComparison(selectedScenarioIndex)}
               style={{
@@ -256,36 +248,29 @@ export default function JudgeSandbox({ user, onNavigate, onLogout, language = 'e
         </div>
 
         {/* Live System Telemetry Strip */}
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
-          gap: '12px',
-          marginTop: '20px',
-          paddingTop: '16px',
-          borderTop: '1px solid rgba(255,255,255,0.15)'
-        }}>
-          <div style={{ background: 'rgba(0,0,0,0.2)', padding: '10px 12px', borderRadius: '10px' }}>
+        <div className="judge-telemetry-grid">
+          <div className="judge-telemetry-box">
             <div style={{ fontSize: '11px', opacity: 0.8 }}>Hindsight Memory Bank</div>
             <div style={{ fontSize: '13px', fontWeight: 700, marginTop: '2px', display: 'flex', alignItems: 'center', gap: '5px' }}>
               <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#4ade80' }}></span>
               Cloud Bank Connected
             </div>
           </div>
-          <div style={{ background: 'rgba(0,0,0,0.2)', padding: '10px 12px', borderRadius: '10px' }}>
+          <div className="judge-telemetry-box">
             <div style={{ fontSize: '11px', opacity: 0.8 }}>Domain Ground Truth</div>
             <div style={{ fontSize: '13px', fontWeight: 700, marginTop: '2px', display: 'flex', alignItems: 'center', gap: '5px' }}>
               <Database size={13} color="#67e8f9" />
               702 Districts (GoI Verified)
             </div>
           </div>
-          <div style={{ background: 'rgba(0,0,0,0.2)', padding: '10px 12px', borderRadius: '10px' }}>
+          <div className="judge-telemetry-box">
             <div style={{ fontSize: '11px', opacity: 0.8 }}>Local DB Query Speed</div>
             <div style={{ fontSize: '13px', fontWeight: 700, marginTop: '2px', display: 'flex', alignItems: 'center', gap: '5px' }}>
               <Zap size={13} color="#fde047" />
               &lt; 5 ms Latency
             </div>
           </div>
-          <div style={{ background: 'rgba(0,0,0,0.2)', padding: '10px 12px', borderRadius: '10px' }}>
+          <div className="judge-telemetry-box">
             <div style={{ fontSize: '11px', opacity: 0.8 }}>Automated Test Suite</div>
             <div style={{ fontSize: '13px', fontWeight: 700, marginTop: '2px', display: 'flex', alignItems: 'center', gap: '5px' }}>
               <CheckCircle2 size={13} color="#4ade80" />
@@ -296,60 +281,33 @@ export default function JudgeSandbox({ user, onNavigate, onLogout, language = 'e
       </div>
 
       {/* Navigation Tabs */}
-      <div style={{ display: 'flex', gap: '10px', marginBottom: '20px', borderBottom: '2px solid #e2e8f0', paddingBottom: '8px' }}>
+      <div className="judge-tabs-bar">
         <button
+          className="judge-tab-btn"
           onClick={() => setActiveTab('compare')}
           style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px',
-            padding: '10px 18px',
-            borderRadius: '10px',
-            border: 'none',
-            fontSize: '14px',
-            fontWeight: 700,
-            cursor: 'pointer',
             background: activeTab === 'compare' ? '#059669' : '#f1f5f9',
-            color: activeTab === 'compare' ? 'white' : '#475569',
-            transition: 'all 0.2s ease'
+            color: activeTab === 'compare' ? 'white' : '#475569'
           }}
         >
           <Zap size={16} /> 1. Before vs After Memory (60-Sec Demo)
         </button>
         <button
+          className="judge-tab-btn"
           onClick={() => setActiveTab('reflection')}
           style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px',
-            padding: '10px 18px',
-            borderRadius: '10px',
-            border: 'none',
-            fontSize: '14px',
-            fontWeight: 700,
-            cursor: 'pointer',
             background: activeTab === 'reflection' ? '#059669' : '#f1f5f9',
-            color: activeTab === 'reflection' ? 'white' : '#475569',
-            transition: 'all 0.2s ease'
+            color: activeTab === 'reflection' ? 'white' : '#475569'
           }}
         >
           <RotateCcw size={16} /> 2. Autonomous Learning & Reflection Loop
         </button>
         <button
+          className="judge-tab-btn"
           onClick={() => setActiveTab('telemetry')}
           style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px',
-            padding: '10px 18px',
-            borderRadius: '10px',
-            border: 'none',
-            fontSize: '14px',
-            fontWeight: 700,
-            cursor: 'pointer',
             background: activeTab === 'telemetry' ? '#059669' : '#f1f5f9',
-            color: activeTab === 'telemetry' ? 'white' : '#475569',
-            transition: 'all 0.2s ease'
+            color: activeTab === 'telemetry' ? 'white' : '#475569'
           }}
         >
           <Server size={16} /> 3. Architecture & Data Telemetry
@@ -362,14 +320,15 @@ export default function JudgeSandbox({ user, onNavigate, onLogout, language = 'e
       {activeTab === 'compare' && (
         <div>
           {/* Scenario Selector Pills */}
-          <div style={{ background: '#ffffff', padding: '16px', borderRadius: '12px', marginBottom: '18px', boxShadow: '0 2px 8px rgba(0,0,0,0.05)', border: '1px solid #e2e8f0' }}>
+          <div style={{ background: '#ffffff', padding: '16px 14px', borderRadius: '12px', marginBottom: '16px', boxShadow: '0 2px 8px rgba(0,0,0,0.05)', border: '1px solid #e2e8f0', width: '100%', boxSizing: 'border-box' }}>
             <div style={{ fontSize: '13px', fontWeight: 700, color: '#334155', marginBottom: '10px' }}>
               Select a Real-World Evaluation Scenario:
             </div>
-            <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+            <div className="judge-scenario-bar">
               {scenarios.map((sc, idx) => (
                 <button
                   key={sc.id}
+                  className="judge-scenario-btn"
                   onClick={() => runComparison(idx)}
                   style={{
                     padding: '8px 16px',
@@ -391,26 +350,21 @@ export default function JudgeSandbox({ user, onNavigate, onLogout, language = 'e
               ))}
             </div>
 
-            <div style={{ marginTop: '12px', fontSize: '13px', color: '#64748b', background: '#f8fafc', padding: '8px 12px', borderRadius: '8px' }}>
+            <div style={{ marginTop: '12px', fontSize: '12px', color: '#64748b', background: '#f8fafc', padding: '10px 12px', borderRadius: '8px', lineHeight: 1.4, wordBreak: 'break-word' }}>
               <strong>Farmer Query:</strong> "{currentSc.query}" &nbsp;|&nbsp; <strong>Context in Hindsight:</strong> <span style={{ color: '#059669', fontWeight: 600 }}>{currentSc.contextSnippet}</span>
             </div>
           </div>
 
           {/* Split Screen View */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '20px' }}>
+          <div className="judge-split-grid">
             {/* LEFT: Stateless Generic AI */}
-            <div style={{
-              background: '#ffffff',
-              borderRadius: '14px',
-              padding: '20px',
+            <div className="judge-card" style={{
               border: '2px solid #fecdd3',
-              boxShadow: '0 4px 15px rgba(244, 63, 94, 0.08)',
-              display: 'flex',
-              flexDirection: 'column'
+              boxShadow: '0 4px 15px rgba(244, 63, 94, 0.08)'
             }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px', borderBottom: '1px solid #ffe4e6', paddingBottom: '10px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px', borderBottom: '1px solid #ffe4e6', paddingBottom: '10px', flexWrap: 'wrap', gap: '8px' }}>
                 <div>
-                  <h3 style={{ margin: 0, fontSize: '17px', color: '#9f1239', fontWeight: 800 }}>
+                  <h3 style={{ margin: 0, fontSize: '16px', color: '#9f1239', fontWeight: 800 }}>
                     ❌ Generic AI (Without Memory)
                   </h3>
                   <span style={{ fontSize: '12px', color: '#e11d48' }}>Standard ChatGPT / Stateless Model</span>
@@ -427,7 +381,7 @@ export default function JudgeSandbox({ user, onNavigate, onLogout, language = 'e
                 </span>
               </div>
 
-              <div style={{ flex: 1, fontSize: '14px', color: '#334155', lineHeight: 1.6, background: '#fff1f2', padding: '14px', borderRadius: '10px', marginBottom: '14px' }}>
+              <div style={{ flex: 1, fontSize: '13px', color: '#334155', lineHeight: 1.55, background: '#fff1f2', padding: '14px', borderRadius: '10px', marginBottom: '14px', wordBreak: 'break-word' }}>
                 {compareLoading ? (
                   <div style={{ color: '#9f1239' }}>Computing stateless response...</div>
                 ) : (
@@ -442,7 +396,8 @@ export default function JudgeSandbox({ user, onNavigate, onLogout, language = 'e
                 borderRadius: '6px',
                 fontSize: '12px',
                 color: '#881337',
-                lineHeight: 1.4
+                lineHeight: 1.4,
+                wordBreak: 'break-word'
               }}>
                 <strong>Why Stateless AI Fails Here:</strong>
                 <p style={{ margin: '4px 0 0' }}>{currentSc.statelessRisk}</p>
@@ -450,18 +405,13 @@ export default function JudgeSandbox({ user, onNavigate, onLogout, language = 'e
             </div>
 
             {/* RIGHT: Sarthi + Hindsight Cloud Memory */}
-            <div style={{
-              background: '#ffffff',
-              borderRadius: '14px',
-              padding: '20px',
+            <div className="judge-card" style={{
               border: '2px solid #a7f3d0',
-              boxShadow: '0 4px 20px rgba(5, 150, 105, 0.12)',
-              display: 'flex',
-              flexDirection: 'column'
+              boxShadow: '0 4px 20px rgba(5, 150, 105, 0.12)'
             }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px', borderBottom: '1px solid #d1fae5', paddingBottom: '10px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px', borderBottom: '1px solid #d1fae5', paddingBottom: '10px', flexWrap: 'wrap', gap: '8px' }}>
                 <div>
-                  <h3 style={{ margin: 0, fontSize: '17px', color: '#065f46', fontWeight: 800, display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <h3 style={{ margin: 0, fontSize: '16px', color: '#065f46', fontWeight: 800, display: 'flex', alignItems: 'center', gap: '6px' }}>
                     <Brain size={18} color="#059669" /> ✅ Sarthi + Hindsight Memory
                   </h3>
                   <span style={{ fontSize: '12px', color: '#059669' }}>Real-World Grounded + Durable Recall</span>
@@ -478,7 +428,7 @@ export default function JudgeSandbox({ user, onNavigate, onLogout, language = 'e
                 </span>
               </div>
 
-              <div style={{ flex: 1, fontSize: '14px', color: '#064e3b', lineHeight: 1.6, background: '#f0fdf4', padding: '14px', borderRadius: '10px', marginBottom: '14px', border: '1px solid #bbf7d0' }}>
+              <div style={{ flex: 1, fontSize: '13px', color: '#064e3b', lineHeight: 1.55, background: '#f0fdf4', padding: '14px', borderRadius: '10px', marginBottom: '14px', border: '1px solid #bbf7d0', wordBreak: 'break-word' }}>
                 {compareLoading ? (
                   <div style={{ color: '#059669' }}>Recalling Hindsight memories & computing grounded advice...</div>
                 ) : (
@@ -493,7 +443,8 @@ export default function JudgeSandbox({ user, onNavigate, onLogout, language = 'e
                 borderRadius: '6px',
                 fontSize: '12px',
                 color: '#064e3b',
-                lineHeight: 1.4
+                lineHeight: 1.4,
+                wordBreak: 'break-word'
               }}>
                 <strong>Hindsight Memory Influence:</strong>
                 <p style={{ margin: '4px 0 0' }}>
@@ -507,20 +458,21 @@ export default function JudgeSandbox({ user, onNavigate, onLogout, language = 'e
       )}
 
       {/* ========================================================= */}
+      {/* ========================================================= */}
       {/* TAB 2: AUTONOMOUS LEARNING & FAILURE REFLECTION SIMULATOR */}
       {/* ========================================================= */}
       {activeTab === 'reflection' && (
-        <div style={{ background: '#ffffff', borderRadius: '16px', padding: '24px', boxShadow: '0 2px 10px rgba(0,0,0,0.06)', border: '1px solid #e2e8f0' }}>
-          <h2 style={{ fontSize: '20px', fontWeight: 800, color: '#0f172a', margin: '0 0 6px' }}>
+        <div className="judge-card">
+          <h2 style={{ fontSize: '18px', fontWeight: 800, color: '#0f172a', margin: '0 0 6px', wordBreak: 'break-word' }}>
             🔄 The Autonomous Learning Loop: How Sarthi Gets Smarter
           </h2>
-          <p style={{ fontSize: '14px', color: '#64748b', margin: '0 0 20px', lineHeight: 1.5 }}>
+          <p style={{ fontSize: '13px', color: '#64748b', margin: '0 0 18px', lineHeight: 1.5, wordBreak: 'break-word' }}>
             Judges evaluate whether an AI agent can <em>learn from negative feedback and real failures</em> without human code changes.
             Simulate a farmer reporting a failure below to see Sarthi's autonomous reflection agent extract the failure, retain it in Hindsight Cloud, and immediately adapt future advice.
           </p>
 
           {/* Step 1: Input Failure */}
-          <div style={{ marginBottom: '18px' }}>
+          <div style={{ marginBottom: '16px' }}>
             <label style={{ fontSize: '13px', fontWeight: 700, color: '#334155', display: 'block', marginBottom: '6px' }}>
               Step 1: Farmer Reports a Harvest Failure or Pest Attack (Voice / Text)
             </label>
@@ -533,20 +485,20 @@ export default function JudgeSandbox({ user, onNavigate, onLogout, language = 'e
                 padding: '12px',
                 borderRadius: '10px',
                 border: '1px solid #cbd5e1',
-                fontSize: '14px',
+                fontSize: '13px',
                 boxSizing: 'border-box'
               }}
             />
-            <div style={{ display: 'flex', gap: '8px', marginTop: '8px' }}>
+            <div style={{ display: 'flex', gap: '8px', marginTop: '8px', flexWrap: 'wrap' }}>
               <button
                 onClick={() => setReflectionInput("My tomato crop failed completely this season because fungal wilt attacked during the heavy late rains.")}
-                style={{ fontSize: '12px', padding: '4px 10px', borderRadius: '6px', border: '1px solid #e2e8f0', background: '#f8fafc', cursor: 'pointer' }}
+                style={{ fontSize: '12px', padding: '6px 10px', borderRadius: '6px', border: '1px solid #e2e8f0', background: '#f8fafc', cursor: 'pointer' }}
               >
                 Preset: Tomato Wilt Failure
               </button>
               <button
                 onClick={() => setReflectionInput("My borewell dried up completely. I only have 30 minutes of water every two days now.")}
-                style={{ fontSize: '12px', padding: '4px 10px', borderRadius: '6px', border: '1px solid #e2e8f0', background: '#f8fafc', cursor: 'pointer' }}
+                style={{ fontSize: '12px', padding: '6px 10px', borderRadius: '6px', border: '1px solid #e2e8f0', background: '#f8fafc', cursor: 'pointer' }}
               >
                 Preset: Borewell Dried Up
               </button>
@@ -560,15 +512,18 @@ export default function JudgeSandbox({ user, onNavigate, onLogout, language = 'e
               background: '#059669',
               color: 'white',
               border: 'none',
-              padding: '12px 24px',
+              padding: '12px 20px',
               borderRadius: '10px',
               fontWeight: 700,
               fontSize: '14px',
               cursor: 'pointer',
               display: 'flex',
               alignItems: 'center',
+              justifyContent: 'center',
               gap: '8px',
-              marginBottom: '24px'
+              marginBottom: '20px',
+              width: '100%',
+              minHeight: '44px'
             }}
           >
             {reflectionLoading ? <RotateCcw size={16} className="spin" /> : <Zap size={16} />}
@@ -577,13 +532,13 @@ export default function JudgeSandbox({ user, onNavigate, onLogout, language = 'e
 
           {/* Results Display */}
           {reflectionResult && (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
               {/* Step 2: What was learned */}
-              <div style={{ background: '#f0fdf4', border: '1px solid #86efac', borderRadius: '12px', padding: '16px' }}>
+              <div style={{ background: '#f0fdf4', border: '1px solid #86efac', borderRadius: '12px', padding: '14px', wordBreak: 'break-word' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#166534', fontWeight: 800, marginBottom: '6px' }}>
                   <CheckCircle2 size={18} color="#16a34a" /> Step 2: Sarthi's Reflection Agent Extracted & Retained in Hindsight Cloud
                 </div>
-                <div style={{ fontSize: '13px', color: '#14532d', lineHeight: 1.5 }}>
+                <div style={{ fontSize: '12px', color: '#14532d', lineHeight: 1.5 }}>
                   <strong>Memory Created:</strong> {reflectionInput}<br />
                   <strong>Category:</strong> <code>type:outcome</code>, <code>type:constraint</code> &nbsp;|&nbsp; 
                   <strong>Isolated Tenant:</strong> <code>farmer:{user?.phone_number || '+919999999001'}</code>
@@ -592,11 +547,11 @@ export default function JudgeSandbox({ user, onNavigate, onLogout, language = 'e
 
               {/* Step 3: Immediate Adaptation on next query */}
               {reflectionFollowupResult && (
-                <div style={{ background: '#ecfdf5', border: '1px solid #34d399', borderRadius: '12px', padding: '16px' }}>
+                <div style={{ background: '#ecfdf5', border: '1px solid #34d399', borderRadius: '12px', padding: '14px', wordBreak: 'break-word' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#065f46', fontWeight: 800, marginBottom: '6px' }}>
                     <Sparkles size={18} color="#059669" /> Step 3: Immediate Adaptation (Next Query: "What crop should I plant next season?")
                   </div>
-                  <p style={{ fontSize: '14px', color: '#064e3b', lineHeight: 1.6, margin: 0 }}>
+                  <p style={{ fontSize: '13px', color: '#064e3b', lineHeight: 1.55, margin: 0 }}>
                     {reflectionFollowupResult.response_text}
                   </p>
                   <div style={{ marginTop: '10px', fontSize: '12px', color: '#047857', fontWeight: 600 }}>
@@ -613,16 +568,16 @@ export default function JudgeSandbox({ user, onNavigate, onLogout, language = 'e
       {/* TAB 3: ARCHITECTURE & DATA TELEMETRY                      */}
       {/* ========================================================= */}
       {activeTab === 'telemetry' && (
-        <div style={{ background: '#ffffff', borderRadius: '16px', padding: '24px', boxShadow: '0 2px 10px rgba(0,0,0,0.06)', border: '1px solid #e2e8f0' }}>
-          <h2 style={{ fontSize: '20px', fontWeight: 800, color: '#0f172a', margin: '0 0 16px' }}>
+        <div className="judge-card">
+          <h2 style={{ fontSize: '18px', fontWeight: 800, color: '#0f172a', margin: '0 0 14px', wordBreak: 'break-word' }}>
             🏛️ Deep Technical Architecture & Persistent Data Tables
           </h2>
 
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '14px', marginBottom: '24px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '12px', marginBottom: '20px' }}>
             {telemetry.tables.map((t, idx) => (
-              <div key={idx} style={{ background: '#f8fafc', padding: '14px', borderRadius: '10px', border: '1px solid #e2e8f0' }}>
+              <div key={idx} style={{ background: '#f8fafc', padding: '12px 14px', borderRadius: '10px', border: '1px solid #e2e8f0' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
-                  <span style={{ fontFamily: 'monospace', fontWeight: 700, color: '#0284c7', fontSize: '13px' }}>{t.name}</span>
+                  <span style={{ fontFamily: 'monospace', fontWeight: 700, color: '#0284c7', fontSize: '12px' }}>{t.name}</span>
                   <span style={{ background: '#e0f2fe', color: '#0369a1', fontSize: '11px', fontWeight: 800, padding: '2px 8px', borderRadius: '10px' }}>
                     {t.count} Records
                   </span>
@@ -632,7 +587,7 @@ export default function JudgeSandbox({ user, onNavigate, onLogout, language = 'e
             ))}
           </div>
 
-          <div style={{ background: '#0f172a', color: '#e2e8f0', borderRadius: '12px', padding: '16px', fontFamily: 'monospace', fontSize: '13px', lineHeight: 1.6 }}>
+          <div className="judge-code-block">
             <div style={{ color: '#38bdf8', fontWeight: 700, marginBottom: '6px' }}># Production Verification Telemetry</div>
             <div>[HINDSIGHT_SDK]: Vectorize Hindsight Client v0.10.1 (Hindsight Cloud)</div>
             <div>[TENANT_ISOLATION]: Partition Key = farmer:&lt;phone_number&gt; (Zero cross-farmer leakage)</div>
