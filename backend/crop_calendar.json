@@ -1,0 +1,100 @@
+{
+  "crops": {
+    "wheat": {
+      "name": "Wheat",
+      "hindi": "गेहूं",
+      "season": "rabi",
+      "planting": {"start": "November", "end": "December"},
+      "harvesting": {"start": "March", "end": "April"},
+      "duration_days": 120,
+      "best_states": ["Punjab", "Haryana", "UP", "MP"],
+      "tips": "Requires cool weather for growth and warm weather for ripening"
+    },
+    "rice": {
+      "name": "Rice",
+      "hindi": "चावल",
+      "season": "kharif",
+      "planting": {"start": "June", "end": "July"},
+      "harvesting": {"start": "October", "end": "November"},
+      "duration_days": 120,
+      "best_states": ["Punjab", "Haryana", "West Bengal", "UP"],
+      "tips": "Requires high rainfall and warm temperature"
+    },
+    "cotton": {
+      "name": "Cotton",
+      "hindi": "कपास",
+      "season": "kharif",
+      "planting": {"start": "April", "end": "June"},
+      "harvesting": {"start": "October", "end": "January"},
+      "duration_days": 180,
+      "best_states": ["Gujarat", "Maharashtra", "Telangana", "Punjab"],
+      "tips": "Requires warm weather and moderate rainfall"
+    },
+    "sugarcane": {
+      "name": "Sugarcane",
+      "hindi": "गन्ना",
+      "season": "year-round",
+      "planting": {"start": "February", "end": "March"},
+      "harvesting": {"start": "December", "end": "March"},
+      "duration_days": 365,
+      "best_states": ["UP", "Maharashtra", "Karnataka", "Tamil Nadu"],
+      "tips": "Requires hot and humid climate with heavy rainfall"
+    },
+    "maize": {
+      "name": "Maize",
+      "hindi": "मक्का",
+      "season": "kharif",
+      "planting": {"start": "June", "end": "July"},
+      "harvesting": {"start": "September", "end": "October"},
+      "duration_days": 90,
+      "best_states": ["Karnataka", "MP", "Bihar", "UP"],
+      "tips": "Requires moderate rainfall and warm temperature"
+    },
+    "mustard": {
+      "name": "Mustard",
+      "hindi": "सरसों",
+      "season": "rabi",
+      "planting": {"start": "October", "end": "November"},
+      "harvesting": {"start": "February", "end": "March"},
+      "duration_days": 120,
+      "best_states": ["Rajasthan", "UP", "Haryana", "MP"],
+      "tips": "Requires cool and dry weather"
+    },
+    "potato": {
+      "name": "Potato",
+      "hindi": "आलू",
+      "season": "rabi",
+      "planting": {"start": "October", "end": "November"},
+      "harvesting": {"start": "January", "end": "February"},
+      "duration_days": 90,
+      "best_states": ["UP", "West Bengal", "Bihar", "Punjab"],
+      "tips": "Requires cool weather and well-drained soil"
+    },
+    "tomato": {
+      "name": "Tomato",
+      "hindi": "टमाटर",
+      "season": "year-round",
+      "planting": {"start": "Any month", "end": "Any month"},
+      "harvesting": {"start": "60-90 days after planting", "end": ""},
+      "duration_days": 75,
+      "best_states": ["Karnataka", "AP", "MP", "Gujarat"],
+      "tips": "Can be grown year-round with proper irrigation"
+    },
+    "onion": {
+      "name": "Onion",
+      "hindi": "प्याज",
+      "season": "rabi",
+      "planting": {"start": "November", "end": "December"},
+      "harvesting": {"start": "March", "end": "April"},
+      "duration_days": 120,
+      "best_states": ["Maharashtra", "Karnataka", "Gujarat", "MP"],
+      "tips": "Requires cool weather for bulb formation"
+    }
+  },
+  "current_season_info": {
+    "1": "rabi", "2": "rabi", "3": "rabi",
+    "4": "summer", "5": "summer",
+    "6": "kharif", "7": "kharif", "8": "kharif", "9": "kharif", "10": "kharif",
+    "11": "rabi", "12": "rabi"
+  }
+}

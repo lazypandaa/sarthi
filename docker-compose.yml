@@ -1,0 +1,42 @@
+version: '3.8'
+
+services:
+  mongodb:
+    image: mongo:7.0
+    container_name: gramvaani-mongodb
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: password123
+      MONGO_INITDB_DATABASE: gramvaani
+    volumes:
+      - mongodb_data:/data/db
+      - ./backend/init-mongo.js:/docker-entrypoint-initdb.d/init-mongo.js:ro
+    networks:
+      - gramvaani-network
+
+  backend:
+    build: ./backend
+    container_name: gramvaani-backend
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      - MONGODB_URL=mongodb://admin:password123@mongodb:27017/gramvaani?authSource=admin
+      - DATABASE_NAME=gramvaani
+    depends_on:
+      - mongodb
+    volumes:
+      - ./backend:/app
+    networks:
+      - gramvaani-network
+    command: uvicorn main_mongodb:app --host 0.0.0.0 --port 8000 --reload
+
+volumes:
+  mongodb_data:
+
+networks:
+  gramvaani-network:
+    driver: bridge
