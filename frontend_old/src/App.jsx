@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react'
-import { Mic, MicOff, Play, Pause, Loader, LogOut, User, Award, Users, Calendar, Brain, Sparkles } from 'lucide-react'
+import { Mic, MicOff, Play, Pause, Loader, LogOut, User, Award, Users, Calendar, Brain, Sparkles, TrendingUp, CheckCircle, ArrowRight, ShieldCheck } from 'lucide-react'
 import axios from 'axios'
 import Auth from './Auth'
 import ProfileNew from './ProfileNew'
@@ -12,6 +12,9 @@ import MemoryInfluenceCard from './MemoryInfluenceCard'
 import EnhancedFeedbackModal from './EnhancedFeedbackModal'
 import Navbar from './Navbar'
 import JudgeSandbox from './JudgeSandbox'
+import WeatherCard from './WeatherCard'
+import AdvisoryCard from './AdvisoryCard'
+import AiRecommendationCard from './AiRecommendationCard'
 import { API_URL } from './config'
 import { getTranslation } from './translations'
 
@@ -45,6 +48,11 @@ function App() {
   const [currentQueryId, setCurrentQueryId] = useState(null)
   const [feedbackText, setFeedbackText] = useState('')
   const [authDemoCreds, setAuthDemoCreds] = useState(null)
+  const [homeWeather, setHomeWeather] = useState(null)
+  const [homeWeatherLoading, setHomeWeatherLoading] = useState(false)
+  const [homeNews, setHomeNews] = useState([])
+  const [homeNewsLoading, setHomeNewsLoading] = useState(false)
+  const [lastWeatherUpdated, setLastWeatherUpdated] = useState('Updated just now')
 
   const mediaRecorderRef = useRef(null)
   const audioRef = useRef(null)
@@ -200,6 +208,64 @@ function App() {
       setLanguage(uiLanguage)
     }
   }, [uiLanguage])
+
+  const fetchHomeWeather = async () => {
+    setHomeWeatherLoading(true)
+    try {
+      const token = localStorage.getItem('token')
+      const wRes = await axios.get(`${API_URL}/api/weather-advisory`, {
+        headers: { Authorization: `Bearer ${token}` }
+      })
+      const wData = wRes.data || {}
+      const rainVal = parseFloat(wData.rainfall) || 0
+      setHomeWeather({
+        location: wData.location || user?.location?.split(',')[0] || 'Guntur',
+        temperature: wData.temperature !== undefined ? wData.temperature : 28,
+        humidity: wData.humidity !== undefined ? wData.humidity : 65,
+        rainfall: wData.rainfall || '0 mm',
+        description: wData.condition || wData.description || 'Clear skies',
+        hasRain: rainVal > 0,
+        warnings: wData.warnings || [],
+        soilContext: wData.soil_context || null
+      })
+      setLastWeatherUpdated('Updated just now')
+    } catch (err) {
+      console.warn('Weather advisory fetch error:', err)
+      setHomeWeather({
+        location: user?.location?.split(',')[0] || 'Guntur',
+        temperature: 28,
+        humidity: 68,
+        rainfall: '0 mm',
+        description: 'Partly cloudy',
+        hasRain: false,
+        warnings: ['High humidity window — optimal for organic foliar spray']
+      })
+    } finally {
+      setHomeWeatherLoading(false)
+    }
+  }
+
+  const fetchHomeNews = async () => {
+    setHomeNewsLoading(true)
+    try {
+      const token = localStorage.getItem('token')
+      const nRes = await axios.get(`${API_URL}/api/agriculture-news`, {
+        headers: { Authorization: `Bearer ${token}` }
+      })
+      setHomeNews(nRes.data || [])
+    } catch (err) {
+      console.warn('Home news error:', err)
+    } finally {
+      setHomeNewsLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    if (isAuthenticated && user) {
+      fetchHomeWeather()
+      fetchHomeNews()
+    }
+  }, [isAuthenticated, user?.location])
 
   const t = (key) => getTranslation(uiLanguage, key)
 
@@ -671,48 +737,69 @@ function App() {
     <div className="container" key={user?.language}>
       <Navbar user={user} activePage="home" onNavigate={handleNavigate} onLogout={handleLogout} language={uiLanguage} />
 
-      <div className="main-card">
-        {/* Real-time Agricultural Telemetry HUD Strip */}
+      {/* Personalized Mobile-First Farm Feed */}
+      <div style={{ maxWidth: '100%', margin: '0 auto', paddingBottom: '20px' }}>
+        
+        {/* 1. Personalized Greeting & Context Header */}
+        <div style={{ marginBottom: '14px', padding: '0 4px' }}>
+          <div style={{ 
+            fontSize: 'clamp(1.25rem, 4.5vw, 1.65rem)', 
+            fontWeight: 800, 
+            color: '#0f172a', 
+            letterSpacing: '-0.02em', 
+            display: 'flex', 
+            alignItems: 'center', 
+            gap: '6px' 
+          }}>
+            <span>Good morning, {user?.name || user?.location?.split(',')[0] || 'Farmer'} 🌾</span>
+          </div>
+          <div style={{ fontSize: '0.84rem', color: '#64748b', fontWeight: 500, marginTop: '2px' }}>
+            Here's what matters for your farm today in {user?.location || 'your district'}.
+          </div>
+        </div>
+
+        {/* 2. Real-time Agricultural Telemetry HUD Strip */}
         <div style={{
           background: 'linear-gradient(90deg, #0f172a 0%, #1e293b 100%)',
           borderRadius: '12px',
-          padding: '8px 14px',
+          padding: '8px 12px',
           marginBottom: '10px',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
           flexWrap: 'wrap',
-          gap: '8px',
+          gap: '6px',
           color: '#e2e8f0',
-          fontSize: '0.78rem',
+          fontSize: '0.74rem',
           border: '1px solid #334155',
-          boxShadow: '0 2px 6px rgba(0,0,0,0.1)'
+          boxShadow: '0 2px 6px rgba(0,0,0,0.06)'
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-            <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#10b981', display: 'inline-block', boxShadow: '0 0 8px #10b981' }}></span>
+            <span style={{ width: '7px', height: '7px', borderRadius: '50%', background: '#10b981', display: 'inline-block', boxShadow: '0 0 6px #10b981' }} />
             <span style={{ fontWeight: 600, color: '#38bdf8' }}>Hindsight Cloud:</span>
             <span style={{ color: '#4ade80', fontWeight: 600 }}>CONNECTED (Active Bank)</span>
           </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '14px', flexWrap: 'wrap' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
             <span>🏛️ <strong>702 Districts</strong> Soil Ground Truth</span>
-            <span>⚡ P95 DB Latency: <strong style={{ color: '#38bdf8' }}>&lt;8ms</strong></span>
-            <span>📍 <strong>{user?.location || 'Guntur, AP'}</strong> ({user?.soil_type || 'Sandy Clay Loam'})</span>
+            <span>⚡ DB: <strong style={{ color: '#38bdf8' }}>&lt;8ms</strong></span>
+            <span>📍 <strong>{user?.location?.split(',')[0] || 'Guntur'}</strong> ({user?.soil_type || 'Sandy Clay Loam'})</span>
           </div>
         </div>
 
-        {/* Live APMC Mandi Ticker Ribbon */}
+        {/* 3. Live APMC Mandi Ticker Ribbon */}
         <div style={{
-          background: '#f8fafc',
+          background: '#ffffff',
           border: '1px solid #e2e8f0',
-          borderRadius: '8px',
-          padding: '6px 12px',
+          borderRadius: '10px',
+          padding: '6px 10px',
           marginBottom: '12px',
           display: 'flex',
           alignItems: 'center',
-          gap: '10px',
-          fontSize: '0.78rem',
+          gap: '8px',
+          fontSize: '0.76rem',
           overflowX: 'auto',
-          whiteSpace: 'nowrap'
+          whiteSpace: 'nowrap',
+          boxShadow: '0 1px 3px rgba(0,0,0,0.03)'
         }}>
           <span style={{ 
             background: '#059669', 
@@ -720,7 +807,7 @@ function App() {
             padding: '2px 6px', 
             borderRadius: '4px', 
             fontWeight: 700,
-            fontSize: '0.72rem',
+            fontSize: '0.68rem',
             letterSpacing: '0.04em'
           }}>
             LIVE APMC
@@ -728,316 +815,407 @@ function App() {
           <span style={{ color: '#334155' }}>
             🌶️ <strong>Chilli (Guntur):</strong> ₹20,800/Qtl <span style={{ color: '#059669', fontWeight: 600 }}>(+₹450)</span>
           </span>
-          <span style={{ color: '#94a3b8' }}>•</span>
+          <span style={{ color: '#cbd5e1' }}>•</span>
           <span style={{ color: '#334155' }}>
             🌾 <strong>Paddy (IR-64):</strong> ₹2,350/Qtl <span style={{ color: '#059669', fontWeight: 600 }}>(Steady)</span>
           </span>
-          <span style={{ color: '#94a3b8' }}>•</span>
+          <span style={{ color: '#cbd5e1' }}>•</span>
           <span style={{ color: '#334155' }}>
             🧅 <strong>Onion:</strong> ₹1,850/Qtl
           </span>
-          <span style={{ color: '#94a3b8' }}>•</span>
+          <span style={{ color: '#cbd5e1' }}>•</span>
           <span style={{ color: '#0369a1' }}>
-            🌤️ <strong>IMD Agromet:</strong> 48hr dry window — optimal for organic foliar spray
+            🌤️ <strong>IMD Agromet:</strong> 48hr dry window — optimal for foliar spray
           </span>
         </div>
 
-        {/* Hackathon Judge Demo Hero Banner */}
-        <div 
-          onClick={() => handleNavigate('judge')}
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            background: 'linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%)',
-            border: '2px solid #059669',
-            borderRadius: '14px',
-            padding: '12px 18px',
-            marginBottom: '14px',
-            cursor: 'pointer',
-            transition: 'all 0.2s ease',
-            boxShadow: '0 4px 12px rgba(5,150,105,0.12)'
-          }}
-          title="Click to launch the 60-Second Judge Sandbox"
-        >
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <div style={{ background: '#059669', color: 'white', borderRadius: '50%', width: '36px', height: '36px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-              <Sparkles size={20} color="#fde047" />
-            </div>
-            <div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
-                <span style={{ fontSize: '0.94rem', fontWeight: 800, color: '#064e3b' }}>
-                  JUDGE EVALUATION HUB ⚡
-                </span>
-                <span style={{ 
-                  background: '#047857', 
-                  color: 'white', 
-                  fontSize: '0.68rem', 
-                  fontWeight: 700, 
-                  padding: '2px 6px', 
-                  borderRadius: '4px' 
-                }}>
-                  60-Sec Before vs After Proof
-                </span>
-              </div>
-              <div style={{ fontSize: '0.82rem', color: '#065f46', marginTop: '2px' }}>
-                Stateless AI vs. Sarthi + Hindsight Memory • Autonomous Failure Reflection • Ground Truth Telemetry
-              </div>
-            </div>
-          </div>
-          <button 
+        {/* 4. Horizontal Quick Action Chips (Judge Hub & Test Chips) */}
+        <div className="horizontal-chip-scroll" style={{ marginBottom: '12px' }}>
+          <button
             type="button"
-            onClick={(e) => {
-              e.stopPropagation()
-              handleNavigate('judge')
-            }}
+            className="chip-pill interactive-tap active"
+            onClick={() => handleNavigate('judge')}
             style={{
-              background: '#059669',
-              color: 'white',
+              background: 'linear-gradient(135deg, #065f46 0%, #059669 100%)',
               border: 'none',
-              borderRadius: '8px',
-              padding: '8px 14px',
-              fontWeight: 700,
-              fontSize: '0.85rem',
-              cursor: 'pointer',
-              whiteSpace: 'nowrap',
-              boxShadow: '0 2px 6px rgba(5,150,105,0.25)'
+              color: '#ffffff'
             }}
           >
-            Launch Judge Demo →
+            <Sparkles size={14} color="#fde047" />
+            <span>Judge Sandbox ⚡ (60-Sec Proof)</span>
+          </button>
+
+          <button
+            type="button"
+            className="chip-pill interactive-tap"
+            onClick={() => {
+              setInputMode('text')
+              processText("What should I plant this season for maximum profit?")
+            }}
+            disabled={isProcessing}
+          >
+            <span>🌱</span>
+            <span>Test Memory Recall</span>
+          </button>
+
+          <button
+            type="button"
+            className="chip-pill interactive-tap"
+            onClick={() => {
+              setInputMode('text')
+              processText("My borewell dried up completely yesterday, I only have 1 hour of drip water now.")
+            }}
+            disabled={isProcessing}
+          >
+            <span>💧</span>
+            <span>Test New Learning</span>
+          </button>
+
+          <button
+            type="button"
+            className="chip-pill interactive-tap"
+            onClick={() => {
+              setInputMode('text')
+              processText("Check Chilli market prices in Guntur APMC and advisory")
+            }}
+            disabled={isProcessing}
+          >
+            <span>💰</span>
+            <span>Check APMC Rates</span>
           </button>
         </div>
 
-        {/* 1-Click Judge Quick Test Chips */}
-        <div style={{
-          marginBottom: '14px',
-          padding: '10px 14px',
-          background: '#f8fafc',
-          borderRadius: '10px',
-          border: '1px solid #e2e8f0'
-        }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '8px' }}>
-            <Sparkles size={14} color="#059669" />
-            <span style={{ fontSize: '0.78rem', fontWeight: 700, color: '#334155', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
-              Judge 1-Click Quick Tests (Instant Evaluation):
+        {/* 5. Compact Mobile Weather Card */}
+        <WeatherCard 
+          weather={homeWeather} 
+          loading={homeWeatherLoading} 
+          onRefresh={fetchHomeWeather}
+          lastUpdatedText={lastWeatherUpdated}
+        />
+
+        {/* 6. Sarthi AI Farm Insight (Hindsight Recommendation) */}
+        <AiRecommendationCard 
+          user={user} 
+          onAskFollowup={() => setInputMode('voice')} 
+          onViewMemory={() => handleNavigate('memory')}
+        />
+
+        {/* 7. Voice & AI Assistant Primary Card */}
+        <div className="card-shell" style={{ marginBottom: '14px', padding: '16px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <span style={{ fontSize: '1.2rem' }}>🤖</span>
+              <span style={{ fontSize: '0.94rem', fontWeight: 700, color: '#0f172a' }}>
+                Ask Sarthi AI in {uiLanguage.toUpperCase()}
+              </span>
+            </div>
+
+            <div className="input-mode-selector" style={{ margin: 0, maxWidth: '140px', padding: '2px', background: '#f1f5f9' }}>
+              <button 
+                className={`mode-button ${inputMode === 'voice' ? 'active' : ''}`} 
+                onClick={() => setInputMode('voice')}
+                style={{ padding: '4px 10px', fontSize: '0.74rem', minHeight: '30px' }}
+              >
+                🎤 Voice
+              </button>
+              <button 
+                className={`mode-button ${inputMode === 'text' ? 'active' : ''}`} 
+                onClick={() => setInputMode('text')}
+                style={{ padding: '4px 10px', fontSize: '0.74rem', minHeight: '30px' }}
+              >
+                ✍ Text
+              </button>
+            </div>
+          </div>
+
+          {inputMode === 'voice' ? (
+            <div className="voice-section" style={{ textAlign: 'center', padding: '10px 0' }}>
+              <button 
+                className={`voice-button interactive-tap ${isRecording ? 'recording' : ''}`} 
+                onClick={isRecording ? stopRecording : startRecording} 
+                disabled={isProcessing}
+                style={{
+                  width: '5.2rem',
+                  height: '5.2rem',
+                  background: isRecording ? '#dc2626' : 'linear-gradient(135deg, #059669 0%, #10b981 100%)',
+                  boxShadow: isRecording ? '0 0 20px rgba(220, 38, 38, 0.5)' : '0 4px 16px rgba(5, 150, 105, 0.35)',
+                  margin: '0 auto 10px'
+                }}
+                aria-label={isRecording ? 'Stop Recording' : 'Start Recording'}
+              >
+                {isProcessing ? <Loader className="loading" size={32} /> : isRecording ? <MicOff size={32} /> : <Mic size={32} />}
+              </button>
+
+              <div className="status-text" style={{ fontSize: '0.84rem', fontWeight: 600, color: '#334155', minHeight: '22px' }}>
+                {isRecording ? `🎤 ${t('listening')} (Speak now...)` :
+                  isProcessing ? `🤖 ${processingStatusText || t('processing')}` :
+                    `👆 Tap mic to ask Sarthi in your language`}
+              </div>
+            </div>
+          ) : (
+            <div className="text-section" style={{ marginTop: '6px' }}>
+              <textarea 
+                value={textInput} 
+                onChange={(e) => setTextInput(e.target.value)} 
+                placeholder={t('typeMessage')} 
+                className="text-input" 
+                rows={2} 
+                disabled={isProcessing}
+                style={{ fontSize: '0.88rem', padding: '10px', minHeight: '64px' }}
+              />
+              <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '8px' }}>
+                <button 
+                  className="submit-button interactive-tap" 
+                  onClick={processText} 
+                  disabled={isProcessing || !textInput.trim()}
+                  style={{ width: 'auto', padding: '8px 18px', fontSize: '0.82rem' }}
+                >
+                  {isProcessing ? <><Loader className="loading" size={14} /> {processingStatusText || t('processing')}</> : t('send')}
+                </button>
+              </div>
+            </div>
+          )}
+
+          {error && (
+            <div className="error-message" style={{ marginTop: '10px', fontSize: '0.82rem' }}>
+              {error}
+            </div>
+          )}
+
+          {/* AI Response Box */}
+          {response && (
+            <div className="response-section" style={{ marginTop: '14px', paddingTop: '12px', borderTop: '1px solid #f1f5f9' }}>
+              {/* Subtle Learning Confirmation Banner (Section 12) */}
+              {response.retained_learning && (
+                <div style={{
+                  padding: '8px 12px',
+                  background: '#ecfdf5',
+                  border: '1px solid #a7f3d0',
+                  borderRadius: '8px',
+                  marginBottom: '10px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  fontSize: '0.78rem',
+                  color: '#065f46',
+                  fontWeight: 600
+                }}>
+                  <CheckCircle size={15} color="#059669" />
+                  <span>✓ Learned: Sarthi saved this farm constraint into memory for future advice.</span>
+                </div>
+              )}
+
+              <h4 style={{ fontSize: '0.88rem', fontWeight: 700, color: '#0f172a', margin: '0 0 6px' }}>
+                📝 {response.transcript}
+              </h4>
+              <p className="response-text" style={{ fontSize: '0.84rem', lineHeight: 1.5, color: '#334155', margin: '0 0 10px' }}>
+                {response.response_text}
+              </p>
+              
+              <MemoryInfluenceCard
+                memoryContext={response.memory_context}
+                relevantMemories={response.relevant_memories}
+                memoryInfluence={response.memory_influence}
+                retainedLearning={response.retained_learning}
+                onOpenCorrection={() => {
+                  setFeedbackModalMode('correction')
+                  setShowFeedbackModal(true)
+                }}
+              />
+
+              {audioUrl && (
+                <div className="audio-controls" style={{ marginTop: '8px' }}>
+                  <button 
+                    className="play-button interactive-tap" 
+                    onClick={playAudio}
+                    style={{ padding: '6px 14px', fontSize: '0.8rem' }}
+                  >
+                    {isPlaying ? <Pause size={16} /> : <Play size={16} />}
+                    {isPlaying ? t('pause') : t('playAudio')}
+                  </button>
+                  <audio 
+                    ref={audioRef} 
+                    src={audioUrl} 
+                    onEnded={handleAudioEnded} 
+                    onError={handleAudioError} 
+                    preload="auto"
+                    playsInline
+                  />
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+
+        {/* 8. Today's Agricultural Advisory Card Feed */}
+        {homeNews.length > 0 && (
+          <div style={{ marginBottom: '14px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px', padding: '0 4px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <TrendingUp size={16} color="#059669" />
+                <span style={{ fontSize: '0.94rem', fontWeight: 800, color: '#0f172a' }}>
+                  Today's Farm Advisory
+                </span>
+              </div>
+              <button
+                type="button"
+                onClick={() => handleNavigate('advisor')}
+                style={{
+                  background: 'transparent',
+                  border: 'none',
+                  color: '#0284c7',
+                  fontSize: '0.78rem',
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '2px'
+                }}
+              >
+                <span>View all</span>
+                <ArrowRight size={13} />
+              </button>
+            </div>
+
+            <AdvisoryCard 
+              advisory={homeNews[0]} 
+              onSelect={() => handleNavigate('advisor')} 
+            />
+          </div>
+        )}
+
+        {/* 9. Crop Calendar Insight Card */}
+        <div 
+          className="card-shell interactive-tap" 
+          onClick={() => handleNavigate('calendar')}
+          style={{ marginBottom: '14px', padding: '14px', cursor: 'pointer' }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <Calendar size={16} color="#059669" />
+              <span style={{ fontSize: '0.88rem', fontWeight: 700, color: '#0f172a' }}>
+                Crop Calendar • Rabi Season
+              </span>
+            </div>
+            <span style={{
+              fontSize: '0.7rem',
+              fontWeight: 700,
+              padding: '2px 8px',
+              borderRadius: '10px',
+              background: '#ecfdf5',
+              color: '#047857',
+              border: '1px solid #a7f3d0'
+            }}>
+              WHEAT (GW-322)
             </span>
           </div>
-          <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-            <button
-              type="button"
-              onClick={() => {
-                setInputMode('text')
-                processText("What should I plant this season for maximum profit?")
-              }}
-              disabled={isProcessing}
-              style={{
-                background: 'white',
-                border: '1px solid #cbd5e1',
-                borderRadius: '20px',
-                padding: '6px 12px',
-                fontSize: '0.8rem',
-                cursor: 'pointer',
-                color: '#0f172a',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '6px',
-                transition: 'all 0.15s ease',
-                boxShadow: '0 1px 2px rgba(0,0,0,0.05)'
-              }}
-              title="Tests Hindsight Recall: Recalls borewell water constraint from farm memory and rejects water-thirsty crops"
-            >
-              <span>🌱</span>
-              <span><strong>Test Memory Recall:</strong> "What should I plant this season?"</span>
-            </button>
 
-            <button
-              type="button"
-              onClick={() => {
-                setInputMode('text')
-                processText("My borewell dried up completely yesterday, I only have 1 hour of drip water now.")
-              }}
-              disabled={isProcessing}
-              style={{
-                background: 'white',
-                border: '1px solid #cbd5e1',
-                borderRadius: '20px',
-                padding: '6px 12px',
-                fontSize: '0.8rem',
-                cursor: 'pointer',
-                color: '#0f172a',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '6px',
-                transition: 'all 0.15s ease',
-                boxShadow: '0 1px 2px rgba(0,0,0,0.05)'
-              }}
-              title="Tests Instant Learning: Stores emergency borewell constraint into Hindsight Cloud bank"
-            >
-              <span>💧</span>
-              <span><strong>Test New Learning:</strong> "My borewell dried up yesterday"</span>
-            </button>
+          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.78rem', color: '#475569', marginBottom: '6px' }}>
+            <span>Sowing: Nov – Dec</span>
+            <span>Harvest: Mar – Apr</span>
+            <span style={{ fontWeight: 600, color: '#059669' }}>32 days to harvest</span>
+          </div>
 
-            <button
-              type="button"
-              onClick={() => {
-                setInputMode('text')
-                processText("Check Chilli market prices in Guntur APMC and advisory")
-              }}
-              disabled={isProcessing}
-              style={{
-                background: 'white',
-                border: '1px solid #cbd5e1',
-                borderRadius: '20px',
-                padding: '6px 12px',
-                fontSize: '0.8rem',
-                cursor: 'pointer',
-                color: '#0f172a',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '6px',
-                transition: 'all 0.15s ease',
-                boxShadow: '0 1px 2px rgba(0,0,0,0.05)'
-              }}
-              title="Tests <8ms Local Database: Fetches real APMC mandi rate and ICAR package"
-            >
-              <span>💰</span>
-              <span><strong>Test Ground Truth:</strong> "Check Chilli APMC market prices"</span>
-            </button>
+          <div style={{ width: '100%', height: '6px', background: '#e2e8f0', borderRadius: '3px', overflow: 'hidden' }}>
+            <div style={{ width: '68%', height: '100%', background: 'linear-gradient(90deg, #10b981, #059669)', borderRadius: '3px' }} />
+          </div>
+
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '10px', fontSize: '0.76rem' }}>
+            <span style={{ color: '#64748b' }}>💧 Moderate water • 🌱 Loamy soil</span>
+            <span style={{ color: '#0284c7', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '3px' }}>
+              Full Calendar <ArrowRight size={12} />
+            </span>
           </div>
         </div>
 
-        <div className="input-mode-selector">
-          <button className={`mode-button ${inputMode === 'voice' ? 'active' : ''}`} onClick={() => setInputMode('voice')}>🎤 {t('voice')}</button>
-          <button className={`mode-button ${inputMode === 'text' ? 'active' : ''}`} onClick={() => setInputMode('text')}>✍ {t('text')}</button>
+        {/* 10. What Sarthi Remembers (Hindsight Memory Preview) */}
+        <div 
+          className="card-shell interactive-tap" 
+          onClick={() => handleNavigate('memory')}
+          style={{ marginBottom: '14px', padding: '14px', cursor: 'pointer' }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <Brain size={16} color="#059669" />
+              <span style={{ fontSize: '0.88rem', fontWeight: 700, color: '#0f172a' }}>
+                What Sarthi Remembers About Your Farm
+              </span>
+            </div>
+            <span style={{ color: '#0284c7', fontSize: '0.76rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '2px' }}>
+              Memory Hub <ArrowRight size={12} />
+            </span>
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
+            <div style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '8px', padding: '8px 10px', fontSize: '0.74rem' }}>
+              <div style={{ color: '#64748b', fontWeight: 600 }}>💧 Water Constraint</div>
+              <div style={{ color: '#0f172a', fontWeight: 700, marginTop: '2px' }}>1 hr/day borewell limit</div>
+            </div>
+
+            <div style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '8px', padding: '8px 10px', fontSize: '0.74rem' }}>
+              <div style={{ color: '#64748b', fontWeight: 600 }}>🌱 Ground-Truth Soil</div>
+              <div style={{ color: '#0f172a', fontWeight: 700, marginTop: '2px' }}>{user?.soil_type || 'Sandy Clay Loam'}</div>
+            </div>
+          </div>
         </div>
 
-        {inputMode === 'voice' ? (
-          <div className="voice-section">
-            <button className={`voice-button ${isRecording ? 'recording' : ''}`} onClick={isRecording ? stopRecording : startRecording} disabled={isProcessing}>
-              {isProcessing ? <Loader className="loading" /> : isRecording ? <MicOff size={40} /> : <Mic size={40} />}
-            </button>
-            <div className="status-text">
-              {isRecording ? `🎤 ${t('listening')}` :
-                isProcessing ? `🤖 ${processingStatusText || t('processing')}` :
-                  `👆 ${t('askQuestion')}`}
-            </div>
-            <div className="language-selector-inline">
-              <div className="language-icon">🌐</div>
-              <select value={uiLanguage} onChange={(e) => setUiLanguage(e.target.value)}>
-                <option value="en">🇺🇸 English</option>
-                <option value="hi">🇮🇳 Hindi</option>
-                <option value="ta">🇮🇳 Tamil</option>
-                <option value="te">🇮🇳 Telugu</option>
-                <option value="kn">🇮🇳 Kannada</option>
-                <option value="ml">🇮🇳 Malayalam</option>
-                <option value="bn">🇮🇳 Bengali</option>
-                <option value="gu">🇮🇳 Gujarati</option>
-                <option value="mr">🇮🇳 Marathi</option>
-              </select>
-            </div>
-          </div>
-        ) : (
-          <div className="text-section">
-            <textarea value={textInput} onChange={(e) => setTextInput(e.target.value)} placeholder={t('typeMessage')} className="text-input" rows={3} disabled={isProcessing} />
-            <div className="text-controls">
-              <button className="submit-button" onClick={processText} disabled={isProcessing || !textInput.trim()}>
-                {isProcessing ? <><Loader className="loading" size={16} /> {processingStatusText || t('processing')}</> : t('send')}
-              </button>
-              <div className="language-selector-inline">
-                <div className="language-icon">🌐</div>
-                <select value={uiLanguage} onChange={(e) => setUiLanguage(e.target.value)}>
-                  <option value="en">🇺🇸 English</option>
-                  <option value="hi">🇮🇳 Hindi</option>
-                  <option value="ta">🇮🇳 Tamil</option>
-                  <option value="te">🇮🇳 Telugu</option>
-                  <option value="kn">🇮🇳 Kannada</option>
-                  <option value="ml">🇮🇳 Malayalam</option>
-                  <option value="bn">🇮🇳 Bengali</option>
-                  <option value="gu">🇮🇳 Gujarati</option>
-                  <option value="mr">🇮🇳 Marathi</option>
-                </select>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {error && <div className="error-message">{error}</div>}
-
-        {response && (
-          <div className="response-section">
-            <h3>📝 {response.transcript}</h3>
-            <p className="response-text">{response.response_text}</p>
-            
-            {/* Phase 5 & 6: Memory Influence & Reasoning Card */}
-            <MemoryInfluenceCard
-              memoryContext={response.memory_context}
-              relevantMemories={response.relevant_memories}
-              memoryInfluence={response.memory_influence}
-              retainedLearning={response.retained_learning}
-              onOpenCorrection={() => {
-                setFeedbackModalMode('correction')
-                setShowFeedbackModal(true)
-              }}
-            />
-            {audioUrl && (
-              <div className="audio-controls">
-                <button className="play-button" onClick={playAudio}>
-                  {isPlaying ? <Pause size={20} /> : <Play size={20} />}
-                  {isPlaying ? t('pause') : t('playAudio')}
-                </button>
-                <audio 
-                  ref={audioRef} 
-                  src={audioUrl} 
-                  onEnded={handleAudioEnded} 
-                  onError={handleAudioError} 
-                  preload="auto"
-                  playsInline
-                  onLoadedData={() => {
-                    if (audioRef.current) {
-                      audioRef.current.play().then(() => setIsPlaying(true)).catch(e => console.log('Play on load failed:', e))
-                    }
-                  }}
-                />
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* Quick Access Buttons */}
-        <div className="feature-buttons">
-          <button className="feature-card" onClick={getMyWeather} disabled={isProcessing}>
-            <div className="icon">🌤</div>
-            <div className="title">{t('myWeather')}</div>
-            <div className="description">{t('currentWeather')} {user?.location?.split(',')[0] || t('yourLocation')}</div>
+        {/* 11. Quick Action Services */}
+        <div style={{ 
+          display: 'grid', 
+          gridTemplateColumns: 'repeat(3, 1fr)', 
+          gap: '8px', 
+          marginTop: '6px',
+          marginBottom: '10px' 
+        }}>
+          <button 
+            type="button"
+            className="card-shell interactive-tap" 
+            onClick={() => openModal('weather')}
+            style={{ 
+              padding: '12px 6px', 
+              textAlign: 'center', 
+              cursor: 'pointer',
+              marginBottom: 0,
+              border: '1px solid #e2e8f0'
+            }}
+          >
+            <div style={{ fontSize: '1.4rem', marginBottom: '4px' }}>🌍</div>
+            <div style={{ fontSize: '0.76rem', fontWeight: 700, color: '#0f172a' }}>Other City</div>
+            <div style={{ fontSize: '0.66rem', color: '#64748b' }}>Check Weather</div>
           </button>
-          {/* <button className="feature-card" onClick={getCropPricesForMyArea('Rice')} disabled={isProcessing}>
-            <div className="icon">🌾</div>
-            <div className="title">Rice Prices</div>
-            <div className="description">Latest rice prices in your area</div>
-          </button>
-          <button className="feature-card" onClick={getCropPricesForMyArea('Wheat')} disabled={isProcessing}>
-            <div className="icon">🌾</div>
-            <div className="title">Wheat Prices</div>
-            <div className="description">Latest wheat prices in your area</div>
-          </button> */}
-        {/* </div> */}
 
-        {/* More Options */}
-        {/* <div className="feature-buttons" style={{marginTop: '20px'}}> */}
-          <button className="feature-card" onClick={() => openModal('weather')}>
-            <div className="icon">🌍</div>
-            <div className="title">{t('otherCity')}</div>
-            <div className="description">{t('checkWeather')}</div>
+          <button 
+            type="button"
+            className="card-shell interactive-tap" 
+            onClick={() => openModal('crop')}
+            style={{ 
+              padding: '12px 6px', 
+              textAlign: 'center', 
+              cursor: 'pointer',
+              marginBottom: 0,
+              border: '1px solid #e2e8f0'
+            }}
+          >
+            <div style={{ fontSize: '1.4rem', marginBottom: '4px' }}>💰</div>
+            <div style={{ fontSize: '0.76rem', fontWeight: 700, color: '#0f172a' }}>Crop Prices</div>
+            <div style={{ fontSize: '0.66rem', color: '#64748b' }}>APMC Rates</div>
           </button>
-          <button className="feature-card" onClick={() => openModal('crop')}>
-            <div className="icon">💰</div>
-            <div className="title">{t('cropPrices')}</div>
-            <div className="description">{t('checkPrices')}</div>
-          </button>
-          <button className="feature-card" onClick={() => openModal('schemes')}>
-            <div className="icon">🏛</div>
-            <div className="title">{t('govSchemes')}</div>
-            <div className="description">{t('learnSchemes')}</div>
+
+          <button 
+            type="button"
+            className="card-shell interactive-tap" 
+            onClick={() => openModal('schemes')}
+            style={{ 
+              padding: '12px 6px', 
+              textAlign: 'center', 
+              cursor: 'pointer',
+              marginBottom: 0,
+              border: '1px solid #e2e8f0'
+            }}
+          >
+            <div style={{ fontSize: '1.4rem', marginBottom: '4px' }}>🏛</div>
+            <div style={{ fontSize: '0.76rem', fontWeight: 700, color: '#0f172a' }}>Gov Schemes</div>
+            <div style={{ fontSize: '0.66rem', color: '#64748b' }}>Subsidies</div>
           </button>
         </div>
       </div>

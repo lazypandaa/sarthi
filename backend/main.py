@@ -42,18 +42,27 @@ try:
 except Exception:
     translate_client = None
 
-# MongoDB connection for hyperlocal data (with connection pooling)
-mongo_client = MongoClient(
-    os.getenv("MONGO_URL"),
-    maxPoolSize=10,  # Connection pool
-    minPoolSize=2,
-    maxIdleTimeMS=30000,  # 30 seconds
-    serverSelectionTimeoutMS=5000  # 5 seconds timeout
-)
-mongo_db = mongo_client.gramvani
-hyperlocal_collection = mongo_db.hyperlocal_context
-success_stories_collection = mongo_db.success_stories
-pest_outbreaks_collection = mongo_db.pest_outbreaks
+# MongoDB connection for hyperlocal data (optional / lazy connection)
+try:
+    mongo_client = MongoClient(
+        os.getenv("MONGO_URL"),
+        maxPoolSize=10,
+        minPoolSize=0,
+        connect=False,
+        maxIdleTimeMS=30000,
+        serverSelectionTimeoutMS=2000
+    )
+    mongo_db = mongo_client.gramvani
+    hyperlocal_collection = mongo_db.hyperlocal_context
+    success_stories_collection = mongo_db.success_stories
+    pest_outbreaks_collection = mongo_db.pest_outbreaks
+except Exception as e:
+    print(f"MongoDB lazy connection note: {e}")
+    mongo_client = None
+    mongo_db = None
+    hyperlocal_collection = None
+    success_stories_collection = None
+    pest_outbreaks_collection = None
 
 app = FastAPI()
 
@@ -137,10 +146,12 @@ LANGUAGE_TO_POLLY_VOICE = {
     "mr": ("Aditi", "hi-IN"),
 }
 
-# Azure Speech for other Indian languages (only if SDK is available)
+# Azure Speech neural voices for Indian languages and English
 AZURE_SPEECH_VOICES = {
-    "ta": "ta-IN-ValluvarNeural",
+    "hi": "hi-IN-SwaraNeural",
+    "en": "en-IN-NeerjaNeural",
     "te": "te-IN-ShrutiNeural",
+    "ta": "ta-IN-ValluvarNeural",
     "kn": "kn-IN-SapnaNeural",
     "ml": "ml-IN-SobhanaNeural",
     "bn": "bn-IN-BashkarNeural",

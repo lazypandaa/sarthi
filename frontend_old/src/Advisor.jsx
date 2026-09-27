@@ -1,7 +1,10 @@
 import React, { useState, useEffect } from 'react'
-import { MapPin, Droplets, Wind, CloudRain, AlertTriangle, Sprout, TrendingUp, ExternalLink, ChevronDown, User, Users, LogOut, Calendar, ShieldCheck } from 'lucide-react'
+import { MapPin, Droplets, Wind, CloudRain, AlertTriangle, Sprout, TrendingUp, ExternalLink, ChevronDown, User, Users, LogOut, Calendar, ShieldCheck, RefreshCw } from 'lucide-react'
 import axios from 'axios'
 import Navbar from './Navbar'
+import WeatherCard from './WeatherCard'
+import AdvisoryCard from './AdvisoryCard'
+import { WeatherSkeleton, AdvisorySkeleton, CropCardSkeleton } from './Skeletons'
 import { getTranslation } from './translations'
 import { API_URL } from './config'
 import './Advisor.css'
@@ -9,6 +12,8 @@ import './Advisor.css'
 function Advisor({ user, onLogout, onNavigate, onOpenVoiceAssistant }) {
   const t = (key) => getTranslation(user?.language || 'en', key)
   const [loading, setLoading] = useState(true)
+  const [refreshing, setRefreshing] = useState(false)
+  const [lastUpdatedText, setLastUpdatedText] = useState('Updated just now')
   const [weather, setWeather] = useState(null)
   const [crops, setCrops] = useState([])
   const [strategies, setStrategies] = useState([])

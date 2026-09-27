@@ -1,0 +1,11 @@
+{
+  "title": "Sarthi — Your Farm. Your Experience. Your AI.",
+  "description": "Personalized agricultural guidance, weather, crop planning and community intelligence for Indian farmers.",
+  "robots": {
+    "index": false
+  },
+  "accessibility": {
+    "addBypassLinks": false,
+    "ignoreReducedMotion": false
+  }
+}

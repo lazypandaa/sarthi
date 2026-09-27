@@ -1,0 +1,1588 @@
+Create a complete premium mobile-first UI/UX design and React/TypeScript frontend for an agricultural AI application called:
+
+S A R T H I
+
+Tagline:
+"Your farm. Your experience. Your AI."
+
+IMPORTANT:
+Use the attached three-screen mobile design as the PRIMARY VISUAL DESIGN REFERENCE.
+
+The reference establishes the desired:
+
+- color palette
+- background
+- card treatment
+- border radius
+- typography hierarchy
+- spacing
+- navigation style
+- icon treatment
+- visual density
+- image treatment
+- mobile proportions
+- overall premium mobile-app feeling
+
+Do NOT copy the reference application's content or business model.
+
+Instead, preserve its visual language and transform it into a premium agricultural AI application.
+
+==================================================
+01 — REFERENCE DESIGN LANGUAGE
+==================================================
+
+The reference has a strong:
+
+PREMIUM AGRICULTURAL / NATURAL / MOBILE-FIRST
+
+visual identity.
+
+The design should feel:
+
+- modern
+- clean
+- premium
+- warm
+- trustworthy
+- natural
+- approachable
+- mobile-native
+
+The reference uses a deep agricultural green as the dominant brand color.
+
+Use this green as the primary identity color throughout Sarthi.
+
+Approximate primary green:
+
+#006B46
+or a very close refined agricultural green.
+
+Use a secondary lighter green:
+
+#0A8F61
+
+Background:
+
+#F3F4F2
+
+Primary surface:
+
+#FFFFFF
+
+Primary text:
+
+#17202A
+
+Secondary text:
+
+#667085
+
+Muted text:
+
+#98A2B3
+
+Soft green surface:
+
+#E8F4EE
+
+Warning:
+
+#F4B740
+
+Soft warning background:
+
+#FFF4D6
+
+Danger:
+
+#D95C5C
+
+Soft danger background:
+
+#FDE8E8
+
+IMPORTANT:
+
+The exact color values may be refined slightly for accessibility and visual consistency, but the overall palette MUST remain very close to the attached reference.
+
+DO NOT introduce purple AI gradients.
+
+DO NOT use neon colors.
+
+DO NOT use dark futuristic AI aesthetics.
+
+Sarthi should feel agricultural and trustworthy.
+
+==================================================
+02 — BACKGROUND
+==================================================
+
+Use the same visual concept as the reference:
+
+VERY LIGHT WARM/COOL NEUTRAL BACKGROUND.
+
+The background should never be pure white everywhere.
+
+Use:
+
+#F3F5F3
+
+or an equivalent subtle neutral.
+
+Cards should sit naturally on this background.
+
+The contrast should come primarily from:
+
+- white surfaces
+- green accents
+- typography
+- spacing
+
+rather than heavy borders.
+
+==================================================
+03 — CARD LANGUAGE
+==================================================
+
+This is one of the most important characteristics of the reference.
+
+Cards should have:
+
+- large rounded corners
+- white surface
+- subtle shadow
+- very light border
+- generous internal padding
+- clean typography
+- clear hierarchy
+
+Recommended radius:
+
+16px–24px
+
+Large hero cards:
+
+24px–28px
+
+Small cards:
+
+14px–18px
+
+Avoid sharp corners.
+
+Avoid excessive borders.
+
+Avoid heavy shadows.
+
+Use subtle elevation.
+
+Example:
+
+background
+    ↓
+white rounded card
+    ↓
+small green accent
+    ↓
+large primary value
+    ↓
+supporting information
+
+==================================================
+04 — MOBILE-FIRST
+==================================================
+
+The application must be designed FIRST for mobile.
+
+Target:
+
+320px → 430px
+
+Then scale naturally to:
+
+480px
+600px
+768px
+1024px
+1280px
+1440px+
+
+Do NOT design desktop first.
+
+Do NOT compress desktop layouts into mobile.
+
+Every screen must feel intentionally designed for a phone.
+
+No:
+
+- horizontal scrolling
+- clipped text
+- fixed-width cards
+- fixed-height page containers
+- desktop tables
+- giant desktop headers
+- overflowing navigation
+
+Use fluid layouts.
+
+==================================================
+05 — SAFE AREA
+==================================================
+
+The application should feel native on modern Android and iOS devices.
+
+Support:
+
+safe-area-inset-top
+safe-area-inset-bottom
+
+especially for the bottom navigation.
+
+The bottom navigation must never overlap:
+
+- gesture navigation
+- Android navigation area
+- iPhone home indicator
+
+==================================================
+06 — TYPOGRAPHY
+==================================================
+
+Use a clean modern sans-serif.
+
+Typography should feel similar to the reference:
+
+- rounded
+- friendly
+- highly readable
+- medium-to-bold headings
+- restrained body typography
+
+Primary heading:
+
+large but NOT enormous.
+
+Section headings:
+
+medium-large.
+
+Primary values:
+
+very large and bold.
+
+Metadata:
+
+small and muted.
+
+Use strong typography hierarchy.
+
+Do NOT make every piece of text bold.
+
+For Indian languages:
+
+the layout must support Devanagari and other Indian scripts without clipping.
+
+Text containers must adapt to longer translations.
+
+==================================================
+07 — ICON STYLE
+==================================================
+
+Use one consistent modern outline icon system.
+
+Prefer:
+
+Lucide-style icons or an equivalent coherent icon set.
+
+Icons should be:
+
+- simple
+- rounded
+- lightweight
+- consistent stroke width
+
+Primary icons may use Sarthi green.
+
+Avoid mixing multiple icon styles.
+
+Do not use random emoji as primary UI icons.
+
+Emoji can be used sparingly inside content where appropriate.
+
+==================================================
+08 — APP STRUCTURE
+==================================================
+
+Create the following screens:
+
+1. Home
+2. AI Recommendation
+3. Advisory
+4. Memory
+5. Crop Calendar
+6. Community
+7. Outbreak Map
+8. Weather Details
+9. Farmer Profile
+10. Notifications
+11. Login
+12. Sign Up
+13. Voice Assistant
+14. Recommendation Details
+15. Advisory Details
+16. Crop Details
+17. Learning Journey
+
+All screens must share one unified design system.
+
+==================================================
+09 — MOBILE NAVIGATION
+==================================================
+
+Create a premium bottom navigation inspired by the reference.
+
+Use:
+
+Home
+Advice
+AI
+Community
+Profile
+
+Calendar and Memory can be accessed through Home/AI/Profile depending on information architecture.
+
+The bottom navigation should:
+
+- have a white surface
+- subtle top border/shadow
+- rounded active-state indicator
+- green active icon
+- dark/gray inactive icons
+- small labels
+- excellent spacing
+- touch-friendly targets
+
+Active state:
+
+green icon
+green text
+soft green background/pill
+
+Do not make the navigation too tall.
+
+==================================================
+10 — TOP HEADER
+==================================================
+
+Use compact mobile headers.
+
+Example:
+
+←   Farm Advisory                 🔔
+
+or:
+
+Sarthi                    👤
+
+Headers should be contextual.
+
+Do NOT repeat huge page titles.
+
+Use:
+
+Back button
+Title
+Optional notification/action
+
+Keep header height compact.
+
+==================================================
+11 — HOME SCREEN
+==================================================
+
+The Home screen should visually follow the reference's first-screen composition:
+
+GREEN HERO / HEADER AREA
+
+followed by:
+
+WHITE / LIGHT CONTENT CARDS.
+
+But adapt the content to agriculture.
+
+Example:
+
+┌──────────────────────────────┐
+│                              │
+│ Hello, Eshwar 👋             │
+│ Good morning                 │
+│ Kunchanapalli, AP            │
+│                              │
+│ [ Ask Sarthi anything... ]   │
+│                              │
+└──────────────────────────────┘
+
+Then:
+
+WEATHER CARD
+
+┌──────────────────────────────┐
+│ 📍 Kunchanapalli             │
+│                              │
+│ 23°C        82%        0mm   │
+│ Temperature Humidity  Rain   │
+│                              │
+│ ☁ Cloudy                     │
+│                              │
+│ Updated 10 min ago           │
+└──────────────────────────────┘
+
+Then:
+
+AI RECOMMENDATION
+
+┌──────────────────────────────┐
+│ ✦ SARTHI AI                  │
+│                              │
+│ Your farm insight            │
+│                              │
+│ Consider Groundnut this      │
+│ Rabi season.                 │
+│                              │
+│ Based on your farm history   │
+│                              │
+│ [ View recommendation → ]    │
+└──────────────────────────────┘
+
+Then:
+
+ADVISORY
+
+Large image-led card.
+
+Then:
+
+CROP CALENDAR
+
+Then:
+
+MEMORY
+
+Then:
+
+COMMUNITY.
+
+==================================================
+12 — GREEN HERO TREATMENT
+==================================================
+
+Use the reference's deep green visual language selectively.
+
+Do NOT make every screen green.
+
+Green should be used for:
+
+- Home hero
+- primary buttons
+- selected navigation
+- AI highlights
+- important agricultural status
+- progress indicators
+
+Keep the rest light.
+
+This creates visual hierarchy.
+
+==================================================
+13 — WEATHER CARD
+==================================================
+
+Make weather a premium compact card.
+
+Large temperature:
+
+23°C
+
+Secondary information:
+
+82%
+Humidity
+
+0 mm
+Rain
+
+12 km/h
+Wind
+
+Add weather icon.
+
+Add contextual message:
+
+"High humidity today"
+
+If there is an agricultural warning:
+
+show a soft warning strip:
+
+⚠ High humidity may increase fungal disease risk.
+
+Do not make the warning visually overwhelming.
+
+==================================================
+14 — AI RECOMMENDATION CARD
+==================================================
+
+This is the most important product card.
+
+It should feel visually special without using futuristic effects.
+
+Use:
+
+white surface
+green accent
+small AI indicator
+strong title
+large recommendation
+supporting reasons
+
+Example:
+
+✦ SARTHI AI
+
+YOUR FARM RECOMMENDATION
+
+Groundnut
+
+Good fit for your Rabi season.
+
+WHY?
+
+✓ Suitable for your soil
+✓ Lower water requirement
+✓ Matches current weather
+✓ Fits your previous experience
+
+[ Explore recommendation ]
+
+==================================================
+15 — HINDSIGHT MEMORY
+==================================================
+
+Memory is the central hackathon feature.
+
+Create a premium Memory section.
+
+Title:
+
+"What Sarthi remembers"
+
+Use small cards.
+
+Example:
+
+💧 Irrigation
+
+"Your farm has limited irrigation availability."
+
+🌱 Crop experience
+
+"Your previous tomato crop failed due to insufficient water."
+
+🎯 Preference
+
+"You prefer lower-water crops."
+
+Each card should include:
+
+memory category
+memory statement
+date/source when useful
+
+Use subtle green accents.
+
+Do NOT expose technical Hindsight terminology to ordinary users.
+
+==================================================
+16 — MEMORY CREATION
+==================================================
+
+When a farmer teaches Sarthi:
+
+"My tomato crop failed because I didn't have enough water."
+
+Show a beautiful confirmation:
+
+✓ Sarthi learned from you
+
+"This will help improve future recommendations."
+
+Use a subtle success animation.
+
+Do NOT use a giant popup.
+
+==================================================
+17 — LEARNING JOURNEY
+==================================================
+
+Create a dedicated screen:
+
+"How Sarthi learns"
+
+Timeline:
+
+YOU ASKED
+
+"What should I grow?"
+
+↓
+
+SARTHI RECOMMENDED
+
+Generic crop recommendation
+
+↓
+
+YOU TAUGHT SARTHI
+
+"My tomato crop failed because of limited water."
+
+↓
+
+SARTHI REMEMBERED
+
+Limited irrigation
+Tomato failure
+
+↓
+
+NEXT TIME
+
+Personalized recommendation
+
+This should be visually beautiful.
+
+Use the same green/white card language.
+
+==================================================
+18 — ADVISORY PAGE
+==================================================
+
+Use a visual feed.
+
+Top:
+
+फार्म सलाहकार
+
+"Advice for your farm"
+
+Sections:
+
+Important
+Weather
+Crop
+Pest & Disease
+Agriculture News
+
+Cards should resemble premium editorial/content cards.
+
+Use large agricultural imagery.
+
+Card:
+
+IMAGE
+
+category badge
+
+title
+
+short description
+
+location
+
+date
+
+source
+
+"Read more"
+
+Use rounded image corners.
+
+==================================================
+19 — CROP CALENDAR
+==================================================
+
+Do NOT use desktop tables.
+
+Create mobile cards.
+
+Example:
+
+🌾 Wheat
+
+RABI
+
+Sowing
+November – December
+
+Harvest
+March – April
+
+Duration
+120 days
+
+🌱 Well-drained loamy soil
+
+💧 Moderate water
+
+Use a visual timeline/progress indicator.
+
+Allow horizontal crop selection.
+
+==================================================
+20 — COMMUNITY
+==================================================
+
+Create a clean agricultural community experience.
+
+Report cards:
+
+🌱 Tomato
+
+Tomato leaf curl reported
+
+📍 Kunchanapalli
+
+Moderate
+
+2 hours ago
+
+Use green/amber/red severity indicators.
+
+Provide a prominent:
+
++ Report an issue
+
+button.
+
+==================================================
+21 — OUTBREAK MAP
+==================================================
+
+Map should be visually dominant.
+
+On mobile:
+
+map approximately 45–55% viewport height.
+
+Below:
+
+bottom sheet.
+
+Example:
+
+Tomato Leaf Curl
+
+3 reports nearby
+
+2 villages affected
+
+Last reported today
+
+[View reports]
+
+Keep the map clean.
+
+==================================================
+22 — FARM PROFILE
+==================================================
+
+Profile should feel like a premium farmer profile rather than a settings page.
+
+Show:
+
+Profile photo
+Farmer name
+Location
+
+Then:
+
+My Farm
+
+Soil
+Irrigation
+Crops
+Farm size
+
+Then:
+
+My Preferences
+
+Then:
+
+My Memories
+
+Then:
+
+Activity
+
+==================================================
+23 — CROP DETAIL
+==================================================
+
+Create a rich crop-detail screen.
+
+Example:
+
+🌾 Wheat
+
+Rabi crop
+
+Hero agricultural image
+
+Quick facts:
+
+120 days
+Moderate water
+Loamy soil
+
+Sections:
+
+Overview
+Soil
+Water
+Sowing
+Harvest
+Risks
+Advisories
+Market
+
+Use horizontal information chips.
+
+==================================================
+24 — VOICE ASSISTANT
+==================================================
+
+Create a premium voice interaction screen.
+
+Large circular microphone button.
+
+State 1:
+
+"Ask Sarthi"
+
+State 2:
+
+"Listening..."
+
+State 3:
+
+"Understanding..."
+
+State 4:
+
+"Thinking..."
+
+State 5:
+
+"Speaking..."
+
+Use subtle animated waveform.
+
+Keep animation calm and premium.
+
+Show transcript.
+
+Example:
+
+Farmer:
+"इस मौसम में कौन सी फसल लगाऊँ?"
+
+Sarthi:
+"आपकी मिट्टी और पानी की उपलब्धता को देखते हुए..."
+
+==================================================
+25 — LOGIN
+==================================================
+
+Create a clean login experience using the same design language.
+
+Green brand accent.
+
+White card/surface.
+
+Fields:
+
+Phone number
+Password
+
+Primary action:
+
+Sign in
+
+Secondary:
+
+Create account
+
+Keep it extremely clean.
+
+Do not overdecorate authentication.
+
+==================================================
+26 — LOADING
+==================================================
+
+Create professional skeleton states for EVERY major screen.
+
+Skeleton should resemble actual content.
+
+Use:
+
+soft neutral gray
+subtle shimmer
+
+Never show blank white screens.
+
+==================================================
+27 — DATA FETCHING
+==================================================
+
+Every component must have:
+
+Loading
+Success
+Empty
+Error
+Stale
+
+states.
+
+For refresh:
+
+keep existing content visible.
+
+Show:
+
+↻ Updating...
+
+instead of replacing the whole screen with a spinner.
+
+==================================================
+28 — EMPTY STATES
+==================================================
+
+Examples:
+
+No memories:
+
+"Sarthi is still learning about your farm."
+
+[Start a conversation]
+
+No advisories:
+
+"You're all caught up."
+
+No community reports:
+
+"No recent reports near your village."
+
+No crop calendar:
+
+"We couldn't find a calendar for this crop yet."
+
+Use small illustrations/icons.
+
+==================================================
+29 — ERROR STATES
+==================================================
+
+Never expose raw errors.
+
+Instead:
+
+"Something went wrong."
+
+"We couldn't load your weather information."
+
+[Try again]
+
+If cached information exists:
+
+"Showing your last available information."
+
+==================================================
+30 — MOTION
+==================================================
+
+Use subtle premium motion.
+
+Card press:
+scale 0.98 → 1
+
+Page transition:
+fade + slight vertical movement
+
+Bottom sheet:
+slide upward
+
+Navigation:
+soft color transition
+
+Memory creation:
+small checkmark animation
+
+Recommendation:
+progressive content reveal
+
+Duration:
+
+100–150ms micro interaction
+150–250ms normal transition
+250–350ms modal/bottom sheet
+
+Respect:
+
+prefers-reduced-motion
+
+No excessive animation.
+
+==================================================
+31 — RESPONSIVE BEHAVIOR
+==================================================
+
+Mobile:
+
+single-column
+
+Tablet:
+
+adaptive 2-column layouts
+
+Desktop:
+
+multi-column where useful.
+
+Never simply stretch mobile cards across a huge desktop screen.
+
+Use max-width content containers.
+
+==================================================
+32 — MOBILE WIDTHS
+==================================================
+
+Explicitly test:
+
+320px
+360px
+375px
+390px
+412px
+430px
+
+At every width:
+
+- no horizontal overflow
+- no clipping
+- no overlap
+- no broken navigation
+- no fixed-width components
+
+==================================================
+33 — DESKTOP
+==================================================
+
+Desktop should preserve the same visual language.
+
+Use:
+
+max-width content area
+sidebar/top navigation
+2–4 column grids
+larger map
+larger recommendation workspace
+
+Do not create a completely different design.
+
+==================================================
+34 — DESIGN TOKENS
+==================================================
+
+Create a unified design system.
+
+Colors:
+
+Primary Green
+Secondary Green
+Background
+Surface
+Text
+Muted
+Border
+Warning
+Danger
+Success
+
+Spacing:
+
+4
+8
+12
+16
+20
+24
+32
+40
+48
+
+Radius:
+
+12
+16
+20
+24
+28
+
+Elevation:
+
+subtle
+medium
+floating
+
+Typography:
+
+Display
+Heading
+Section
+Body
+Caption
+
+Motion:
+
+Fast
+Normal
+Slow
+
+==================================================
+35 — REUSABLE COMPONENTS
+==================================================
+
+Build reusable components:
+
+AppShell
+MobileHeader
+DesktopNavigation
+BottomNavigation
+Card
+WeatherCard
+RecommendationCard
+MemoryCard
+AdvisoryCard
+CropCard
+CropCalendarCard
+CommunityCard
+OutbreakMap
+BottomSheet
+Badge
+Chip
+Button
+IconButton
+Input
+Skeleton
+EmptyState
+ErrorState
+Toast
+Timeline
+VoiceAssistant
+StatCard
+SectionHeader
+
+Avoid duplicating UI code.
+
+==================================================
+36 — FRONTEND ARCHITECTURE
+==================================================
+
+Use:
+
+React
+TypeScript
+
+Recommended:
+
+src/
+  components/
+  pages/
+  layouts/
+  api/
+  hooks/
+  types/
+  mocks/
+  assets/
+  utils/
+
+API abstraction:
+
+src/api/client.ts
+
+Services:
+
+auth.ts
+farmer.ts
+weather.ts
+advisory.ts
+recommendation.ts
+memory.ts
+calendar.ts
+community.ts
+crops.ts
+
+Do not put API calls directly into visual components.
+
+==================================================
+37 — EXISTING BACKEND INTEGRATION
+==================================================
+
+The existing Sarthi/Gram Vaani backend remains the source of truth.
+
+Frontend will eventually connect to:
+
+VITE_API_BASE_URL
+
+Create typed API service interfaces.
+
+Do not implement a replacement backend.
+
+Do not move agricultural logic into frontend.
+
+Do not implement Hindsight in frontend.
+
+The backend handles:
+
+authentication
+farmer data
+agricultural data
+recommendations
+weather
+community
+Hindsight
+feedback
+memory
+
+The frontend handles:
+
+presentation
+interaction
+input
+navigation
+loading
+errors
+animations
+responsive layout
+
+==================================================
+38 — MOCK DATA
+==================================================
+
+Until the real backend is connected:
+
+Use realistic mock data.
+
+But keep ALL mock data in:
+
+src/mocks/
+
+Never embed large datasets directly into components.
+
+Make mock responses match the expected API types.
+
+The transition:
+
+MOCK API
+
+to:
+
+REAL API
+
+must require minimal changes.
+
+==================================================
+39 — DATA-DRIVEN DESIGN
+==================================================
+
+Do not design screens around fake fixed content.
+
+Components must work with:
+
+short content
+long content
+missing content
+multiple crops
+multiple advisories
+different languages
+different farmer names
+different locations
+different weather values
+
+==================================================
+40 — MULTILINGUAL
+==================================================
+
+Support:
+
+English
+Hindi
+
+Architecture should allow:
+
+Telugu
+Tamil
+Kannada
+Marathi
+Bengali
+etc.
+
+Do not assume text is always English.
+
+Cards and buttons must expand naturally.
+
+==================================================
+41 — ACCESSIBILITY
+==================================================
+
+All controls:
+
+minimum 44px touch target
+
+Use:
+
+semantic HTML
+accessible labels
+keyboard support
+visible focus
+screen reader support
+proper contrast
+
+==================================================
+42 — PERFORMANCE
+==================================================
+
+Optimize for mobile networks.
+
+Use:
+
+lazy images
+code splitting
+efficient rendering
+API caching
+skeleton loading
+minimal dependencies
+
+Do not use heavy libraries merely for decorative effects.
+
+==================================================
+43 — DESIGN QUALITY BAR
+==================================================
+
+The final design must NOT look like:
+
+- a generic dashboard
+- a template
+- a college project
+- a collection of random cards
+- a desktop website compressed into mobile
+- an AI-themed neon interface
+
+It should look like:
+
+A premium agricultural mobile application designed by an experienced product design team.
+
+The reference image's visual language should be clearly recognizable:
+
+DEEP GREEN
++
+SOFT NEUTRAL BACKGROUND
++
+WHITE ROUNDED CARDS
++
+SUBTLE SHADOWS
++
+LARGE CLEAN IMAGERY
++
+COMPACT INFORMATION
++
+PREMIUM BOTTOM NAVIGATION
++
+CALM MICRO-INTERACTIONS
+
+==================================================
+44 — IMPORTANT DIFFERENCE FROM THE REFERENCE
+==================================================
+
+The reference appears to contain commerce/product-oriented screens.
+
+DO NOT copy those semantics.
+
+Replace them with agricultural intelligence.
+
+For example:
+
+Reference:
+"Add to cart"
+
+Sarthi:
+"View recommendation"
+
+Reference:
+"Best offers"
+
+Sarthi:
+"Recommended for your farm"
+
+Reference:
+"Product details"
+
+Sarthi:
+"Crop details"
+
+Reference:
+"Notes"
+
+Sarthi:
+"Farm memories"
+
+Reference:
+"Statistics"
+
+Sarthi:
+"Farm insights"
+
+The visual treatment can be inspired by the reference while the product meaning remains completely Sarthi-specific.
+
+==================================================
+45 — PRIMARY PRODUCT FLOW
+==================================================
+
+The most important journey is:
+
+HOME
+ ↓
+ASK SARTHI
+ ↓
+CURRENT FARM CONTEXT
+ ↓
+AI RECOMMENDATION
+ ↓
+WHY THIS RECOMMENDATION?
+ ↓
+WHAT SARTHI REMEMBERS
+ ↓
+FARMER FEEDBACK
+ ↓
+SARTHI LEARNS
+ ↓
+NEW SESSION
+ ↓
+PERSONALIZED RECOMMENDATION
+
+This journey must feel seamless.
+
+==================================================
+46 — HACKATHON DEMONSTRATION
+==================================================
+
+The application must visually support the Hindsight demonstration.
+
+SESSION 1:
+
+Farmer:
+"What should I grow this season?"
+
+Sarthi:
+Generic recommendation.
+
+Farmer:
+"I only have limited irrigation."
+
+Farmer:
+"My tomato crop failed because of insufficient water."
+
+Sarthi:
+
+✓ Learned from you
+
+Memory appears.
+
+SESSION 2:
+
+Farmer asks:
+
+"What should I grow this season?"
+
+Sarthi recalls previous experience.
+
+Recommendation changes.
+
+Show:
+
+"Why this changed"
+
+✓ Limited irrigation
+✓ Previous tomato failure
+✓ Farmer preference
+✓ Current season
+✓ Soil context
+
+This must be visually obvious to a hackathon judge.
+
+==================================================
+47 — FINAL SCREEN QUALITY
+==================================================
+
+Every screen should feel intentionally designed.
+
+Pay particular attention to:
+
+- 8px spacing rhythm
+- card alignment
+- image cropping
+- typography baseline
+- icon alignment
+- consistent padding
+- consistent corner radius
+- visual balance
+- information density
+- touch targets
+- safe areas
+
+Nothing should look randomly generated.
+
+==================================================
+48 — FINAL OUTPUT
+==================================================
+
+Generate the complete Sarthi frontend.
+
+The design should be:
+
+MOBILE-FIRST
+PREMIUM
+AGRICULTURAL
+AI-POWERED
+HUMAN
+FAST
+ACCESSIBLE
+RESPONSIVE
+
+Use the attached reference as the visual foundation.
+
+Improve the reference where appropriate for agricultural AI UX.
+
+Do not merely copy it.
+
+Create a coherent complete product experience across all screens.
+
+The resulting frontend must be clean enough to connect directly to the existing Gram Vaani/Sarthi backend later through REST APIs.
+
+The most important visual goal:
+
+When someone opens Sarthi on a phone, it should look and feel like a professionally designed mobile application — not a responsive website.

@@ -273,13 +273,28 @@ class AgriService:
             if matches_geo and matches_cat:
                 filtered.append(adv)
 
-        # Fallback to all if nothing matched
-        if not filtered:
-            filtered = items[:6]
+        # Ensure we always provide a comprehensive collection of schemes and advisories
+        existing_ids = {f.get("advisory_id") for f in filtered}
+        for adv in items:
+            if adv.get("advisory_id") not in existing_ids:
+                filtered.append(adv)
+                existing_ids.add(adv.get("advisory_id"))
+            if len(filtered) >= 10:
+                break
 
-        # Format for frontend Advisor.jsx consumption
+        # Format for frontend Advisor consumption
         result = []
         for f in filtered:
+            img = f.get("image")
+            if not img or not img.strip():
+                cat = f.get("category")
+                if cat == "government_scheme":
+                    img = "https://images.unsplash.com/photo-1625246333195-78d9c38ad449?w=700&h=350&fit=crop"
+                elif cat == "weather_warning":
+                    img = "https://images.unsplash.com/photo-1527482797697-8795b05a13fe?w=700&h=350&fit=crop"
+                else:
+                    img = "https://images.unsplash.com/photo-1592982537447-7440770cbfc9?w=700&h=350&fit=crop"
+
             result.append({
                 "id": f.get("advisory_id"),
                 "title": f.get("title"),
@@ -288,7 +303,7 @@ class AgriService:
                 "category": f.get("category"),
                 "source": f.get("source"),
                 "link": f.get("source_url") or f.get("link", "https://agricoop.gov.in"),
-                "image": f.get("image", "https://images.unsplash.com/photo-1592982537447-7440770cbfc9?w=400&h=200&fit=crop"),
+                "image": img,
                 "published_at": f.get("published_at", datetime.utcnow().isoformat())
             })
         return result

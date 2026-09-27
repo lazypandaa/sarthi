@@ -24,7 +24,7 @@ OFFICIAL_ADVISORIES_DATA = [
         "source": "ANGRAU & ICAR-National Research Centre on Seed Spices",
         "source_url": "https://angrau.ac.in",
         "days_ago": 1,
-        "image": "https://images.unsplash.com/photo-1592982537447-7440770cbfc9?w=400&h=200&fit=crop"
+        "image": "https://images.unsplash.com/photo-1592982537447-7440770cbfc9?w=700&h=350&fit=crop"
     },
     {
         "advisory_id": "adv_mp_wheat_rust_2026",
@@ -37,7 +37,7 @@ OFFICIAL_ADVISORIES_DATA = [
         "source": "IMD Agromet Advisory Service (GKMS)",
         "source_url": "https://mausam.imd.gov.in",
         "days_ago": 2,
-        "image": "https://images.unsplash.com/photo-1527482797697-8795b05a13fe?w=400&h=200&fit=crop"
+        "image": "https://images.unsplash.com/photo-1527482797697-8795b05a13fe?w=700&h=350&fit=crop"
     },
     {
         "advisory_id": "adv_mh_onion_storage_2026",
@@ -50,7 +50,7 @@ OFFICIAL_ADVISORIES_DATA = [
         "source": "Maharashtra State Agriculture Dept & MSAMB",
         "source_url": "https://krishi.maharashtra.gov.in",
         "days_ago": 3,
-        "image": "https://images.unsplash.com/photo-1574943320219-553eb213f72d?w=400&h=200&fit=crop"
+        "image": "https://images.unsplash.com/photo-1574943320219-553eb213f72d?w=700&h=350&fit=crop"
     },
     {
         "advisory_id": "adv_tg_paddy_bph_2026",
@@ -63,7 +63,7 @@ OFFICIAL_ADVISORIES_DATA = [
         "source": "Professor Jayashankar Telangana State Agricultural University (PJTSAU)",
         "source_url": "https://pjtsau.edu.in",
         "days_ago": 4,
-        "image": "https://images.unsplash.com/photo-1560493676-04071c5f467b?w=400&h=200&fit=crop"
+        "image": "https://images.unsplash.com/photo-1560493676-04071c5f467b?w=700&h=350&fit=crop"
     },
     {
         "advisory_id": "adv_india_pmkisan_installment_2026",
@@ -76,7 +76,7 @@ OFFICIAL_ADVISORIES_DATA = [
         "source": "Ministry of Agriculture & Farmers Welfare, GoI",
         "source_url": "https://pmkisan.gov.in",
         "days_ago": 5,
-        "image": "https://images.unsplash.com/photo-1625246333195-78d9c38ad449?w=400&h=200&fit=crop"
+        "image": "https://images.unsplash.com/photo-1625246333195-78d9c38ad449?w=700&h=350&fit=crop"
     },
     {
         "advisory_id": "adv_india_pmksy_drip_2026",
@@ -89,7 +89,59 @@ OFFICIAL_ADVISORIES_DATA = [
         "source": "Department of Agriculture & Farmers Welfare, GoI",
         "source_url": "https://pmksy.gov.in",
         "days_ago": 6,
-        "image": "https://images.unsplash.com/photo-1556761175-b413da4baf72?w=400&h=200&fit=crop"
+        "image": "https://images.unsplash.com/photo-1556761175-b413da4baf72?w=700&h=350&fit=crop"
+    },
+    {
+        "advisory_id": "adv_india_pmfby_crop_insurance_2026",
+        "title": "Pradhan Mantri Fasal Bima Yojana (PMFBY): Crop Loss & Yield Shield",
+        "summary": "Comprehensive risk insurance covering post-harvest losses, unseasonal cyclone downpours, and mid-season localized calamities. Premium subsidized up to 90% by Central & State governments (farmers pay only 1.5% for Rabi and 2% for Kharif crops). Claim notifications must be submitted within 72 hours via the Crop Insurance App.",
+        "crop": "All Food & Oilseed Crops",
+        "state": "All India",
+        "district": "All",
+        "category": "government_scheme",
+        "source": "Ministry of Agriculture & Farmers Welfare, GoI",
+        "source_url": "https://pmfby.gov.in",
+        "days_ago": 7,
+        "image": "https://images.unsplash.com/photo-1500937386664-56d1dfef3854?w=700&h=350&fit=crop"
+    },
+    {
+        "advisory_id": "adv_india_kusum_solar_2026",
+        "title": "PM-KUSUM Scheme: 60% Subsidy on Standalone Solar Agriculture Pumps",
+        "summary": "Farmers with un-electrified diesel pumps or high grid reliance can install 3HP to 7.5HP off-grid solar water pumps with 60% direct capital subsidy (30% Centre + 30% State). Cuts irrigation electricity cost to zero and supports automated drip fertigation during daylight hours.",
+        "crop": "Irrigated Crops",
+        "state": "All India",
+        "district": "All",
+        "category": "government_scheme",
+        "source": "Ministry of New and Renewable Energy (MNRE), GoI",
+        "source_url": "https://pmkusum.mnre.gov.in",
+        "days_ago": 8,
+        "image": "https://images.unsplash.com/photo-1509391365360-2e959784a276?w=700&h=350&fit=crop"
+    },
+    {
+        "advisory_id": "adv_india_soil_health_card_2026",
+        "title": "Soil Health Card Mission: Free GPS Soil Testing & Micro-Nutrient Subsidy",
+        "summary": "Get your farm soil tested for 12 key health parameters: N, P, K, Organic Carbon, pH, Electrical Conductivity, Sulfur, Zinc, Iron, Copper, Manganese, and Boron. Free soil sample pickup at village panchayat level. Tailored fertilizer advisory reduces urea overuse by up to 25% while maintaining peak yield.",
+        "crop": "All Crops",
+        "state": "All India",
+        "district": "All",
+        "category": "government_scheme",
+        "source": "DAC&FW, Ministry of Agriculture & Farmers Welfare",
+        "source_url": "https://soilhealth.dac.gov.in",
+        "days_ago": 9,
+        "image": "https://images.unsplash.com/photo-1464226184884-fa280b87c399?w=700&h=350&fit=crop"
+    },
+    {
+        "advisory_id": "adv_india_kcc_loan_2026",
+        "title": "Kisan Credit Card (KCC): Concessional 4% Interest Rate Crop Credit",
+        "summary": "Institutional crop production loans up to ₹3,00,000 at an effective interest rate of just 4% per annum upon prompt repayment (7% base minus 3% Interest Subvention Scheme). Covers input purchases for seeds, fertilizers, tractor diesel, and post-harvest storage expenses without requiring high collateral.",
+        "crop": "General Agriculture & Animal Husbandry",
+        "state": "All India",
+        "district": "All",
+        "category": "government_scheme",
+        "source": "NABARD & Reserve Bank of India",
+        "source_url": "https://www.nabard.org",
+        "days_ago": 10,
+        "image": "https://images.unsplash.com/photo-1595974482597-4b8da8879bc5?w=700&h=350&fit=crop"
     }
 ]
 
