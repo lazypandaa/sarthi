@@ -22,11 +22,12 @@ wheels/
 
 # Environment variables
 .env
-.env.local
-.env.production.local
+.env.*
+!.env.example
 
 # Node.js
 node_modules/
+.vite/
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
@@ -34,6 +35,7 @@ yarn-error.log*
 # Build outputs
 frontend/dist/
 frontend/build/
+frontend/.vite/
 
 # IDE
 .vscode/
