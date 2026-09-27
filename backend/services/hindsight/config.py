@@ -47,7 +47,7 @@ def get_hindsight_config() -> HindsightConfig:
     """
     api_key = os.getenv("HINDSIGHT_API_KEY")
     base_url = os.getenv("HINDSIGHT_BASE_URL", "https://api.hindsight.vectorize.io").strip()
-    bank_id = os.getenv("HINDSIGHT_BANK_ID", "gramvaani").strip()
+    bank_id = os.getenv("HINDSIGHT_BANK_ID", "sarthi").strip()
     
     timeout_raw = os.getenv("HINDSIGHT_TIMEOUT", "30.0")
     try:
@@ -58,6 +58,6 @@ def get_hindsight_config() -> HindsightConfig:
     return HindsightConfig(
         api_key=api_key.strip() if api_key else None,
         base_url=base_url if base_url else "https://api.hindsight.vectorize.io",
-        bank_id=bank_id if bank_id else "gramvaani",
+        bank_id=bank_id if bank_id else "sarthi",
         timeout_seconds=timeout,
     )
