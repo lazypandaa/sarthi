@@ -3,6 +3,7 @@ import { Edit2, Save, X, User, Mail, MapPin, Globe, Calendar, MessageSquare, Tre
 import axios from 'axios'
 import { getTranslation } from './translations'
 import Navbar from './Navbar'
+import { API_URL } from './config'
 import './ProfileMobile.css'
 
 function Profile({ user, onBack, onUserUpdate, onLogout, onNavigate }) {
@@ -25,7 +26,7 @@ function Profile({ user, onBack, onUserUpdate, onLogout, onNavigate }) {
   const fetchUserQueries = async () => {
     try {
       const token = localStorage.getItem('token')
-      const response = await axios.get('http://localhost:8000/api/query-history', {
+      const response = await axios.get(`${API_URL}/api/query-history`, {
         headers: { Authorization: `Bearer ${token}` }
       })
       const queriesData = response.data.queries || []
@@ -52,7 +53,7 @@ function Profile({ user, onBack, onUserUpdate, onLogout, onNavigate }) {
     setError('')
     try {
       const token = localStorage.getItem('token')
-      await axios.put('http://localhost:8000/api/profile', editData, {
+      await axios.put(`${API_URL}/api/profile`, editData, {
         headers: { Authorization: `Bearer ${token}` }
       })
       onUserUpdate(editData)

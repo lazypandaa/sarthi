@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react'
-import { MapPin, Droplets, Wind, CloudRain, AlertTriangle, Sprout, TrendingUp, ExternalLink, ChevronDown, User, Users, LogOut } from 'lucide-react'
+import { MapPin, Droplets, Wind, CloudRain, AlertTriangle, Sprout, TrendingUp, ExternalLink, ChevronDown, User, Users, LogOut, Calendar, ShieldCheck } from 'lucide-react'
 import axios from 'axios'
 import Navbar from './Navbar'
 import { getTranslation } from './translations'
+import { API_URL } from './config'
 import './Advisor.css'
 
 function Advisor({ user, onLogout, onNavigate, onOpenVoiceAssistant }) {
@@ -49,42 +50,49 @@ function Advisor({ user, onLogout, onNavigate, onOpenVoiceAssistant }) {
       const token = localStorage.getItem('token')
       
       // Fetch weather
-      const weatherRes = await axios.get('http://localhost:8000/api/weather', {
+      const weatherRes = await axios.get(`${API_URL}/api/weather`, {
         headers: { Authorization: `Bearer ${token}` }
       })
+      const wData = weatherRes.data
+      const rainVal = typeof wData.rainfall === 'number' ? wData.rainfall : parseFloat(wData.rainfall || '0')
       setWeather({
-        location: user?.location?.split(',')[0] || t('yourLocation'),
-        temperature: weatherRes.data.temperature,
-        humidity: weatherRes.data.humidity,
-        rainfall: weatherRes.data.rainfall || t('none'),
-        description: weatherRes.data.condition,
-        hasRain: weatherRes.data.rainfall > 0
+        location: wData.location || user?.location?.split(',')[0] || t('yourLocation'),
+        temperature: wData.temperature,
+        humidity: wData.humidity,
+        rainfall: wData.rainfall || '0 mm',
+        description: wData.condition || wData.description || 'Clear',
+        hasRain: rainVal > 0,
+        warnings: wData.warnings || [],
+        soilContext: wData.soil_context || null
       })
       
       // Fetch crops
-      const cropsRes = await axios.get('http://localhost:8000/api/crop-recommendations', {
+      const cropsRes = await axios.get(`${API_URL}/api/crop-recommendations`, {
         headers: { Authorization: `Bearer ${token}` }
       })
-      const cropsData = cropsRes.data.map(crop => ({
+      const cropsData = (cropsRes.data || []).map(crop => ({
         name: crop.crop_name,
-        explanation: crop.climate_match,
+        explanation: crop.climate_match || crop.explanation,
         water_requirement: crop.water_requirement,
-        yield_potential: t('high')
+        yield_potential: crop.yield_potential || t('high'),
+        soil_compatibility: crop.soil_compatibility,
+        duration_days: crop.expected_duration_days || crop.duration_days,
+        season: crop.season
       }))
       setCrops(cropsData)
       
       // Fetch strategies
-      const stratRes = await axios.get('http://localhost:8000/api/optimization-strategies', {
+      const stratRes = await axios.get(`${API_URL}/api/optimization-strategies`, {
         headers: { Authorization: `Bearer ${token}` }
       })
-      const stratData = stratRes.data.map((s, idx) => {
+      const stratData = (stratRes.data || []).map((s, idx) => {
         const icons = ['💧', '🌱', '🚜', '📊', '🌾', '⚡']
         return {
           icon: icons[idx % icons.length],
           title: s.strategy_name,
           benefit: `${t('impact')}: ${s.impact_level} | ${t('difficulty')}: ${s.difficulty}`,
           reason: `${t('costEffectiveness')}: ${s.cost_effectiveness}`,
-          link: 'https://agricoop.gov.in'
+          link: s.link || 'https://agricoop.gov.in'
         }
       })
       setStrategies(stratData)
@@ -112,15 +120,17 @@ function Advisor({ user, onLogout, onNavigate, onOpenVoiceAssistant }) {
     setLoadingNews(true)
     try {
       const token = localStorage.getItem('token')
-      const response = await axios.get('http://localhost:8000/api/agriculture-news', {
+      const response = await axios.get(`${API_URL}/api/agriculture-news`, {
         headers: { Authorization: `Bearer ${token}` }
       })
-      const newsData = response.data.map(n => ({
+      const newsData = (response.data || []).map(n => ({
         title: n.title,
         summary: n.summary,
         source: n.source,
-        url: n.link,
-        image: n.image || `https://source.unsplash.com/400x200/?agriculture,farming,${encodeURIComponent(n.title.split(' ')[0])}`
+        url: n.link || '#',
+        category: n.category,
+        date: n.published_at,
+        image: n.image || 'https://images.unsplash.com/photo-1592982537447-7440770cbfc9?auto=format&fit=crop&w=400&q=80'
       }))
       setNews(newsData)
     } catch (err) {
@@ -194,6 +204,23 @@ function Advisor({ user, onLogout, onNavigate, onOpenVoiceAssistant }) {
                 </div>
               </div>
 
+              {weather.warnings && weather.warnings.length > 0 && (
+                <div className="weather-alert" style={{ background: '#fff3cd', borderColor: '#ffeeba', color: '#856404', marginTop: '12px' }}>
+                  <AlertTriangle size={20} color="#856404" />
+                  <div>
+                    <strong>Agromet Alert:</strong>
+                    <p style={{ margin: 0 }}>{weather.warnings.join(' | ')}</p>
+                  </div>
+                </div>
+              )}
+
+              {weather.soilContext && (
+                <div style={{ marginTop: '12px', padding: '10px', background: '#f1f8e9', borderRadius: '8px', fontSize: '13px', color: '#2e7d32', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <ShieldCheck size={16} />
+                  <span><strong>Soil Baseline ({weather.location}):</strong> {weather.soilContext.soil_type || 'Fertile'} (pH: {weather.soilContext.ph || '6.8'}, NPK: {weather.soilContext.nitrogen_level || 'Med'}/{weather.soilContext.phosphorus_level || 'Med'}/{weather.soilContext.potassium_level || 'Med'})</span>
+                </div>
+              )}
+
               {weather.hasRain && (
                 <div className="weather-alert">
                   <AlertTriangle size={20} />
@@ -230,13 +257,21 @@ function Advisor({ user, onLogout, onNavigate, onOpenVoiceAssistant }) {
                     {article.image && (
                       <img src={article.image} alt={article.title} className="news-image" />
                     )}
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                      <span style={{ fontSize: '11px', textTransform: 'uppercase', background: '#e8f5e9', color: '#2e7d32', padding: '2px 8px', borderRadius: '12px', fontWeight: 'bold' }}>
+                        {article.category || 'Advisory'}
+                      </span>
+                      {article.date && <span style={{ fontSize: '11px', color: '#888' }}>{article.date}</span>}
+                    </div>
                     <h3>{article.title}</h3>
                     <p className="news-summary">{article.summary}</p>
                     <div className="news-footer">
                       <span className="news-source">{article.source}</span>
-                      <a href={article.url} target="_blank" rel="noopener noreferrer" className="news-link">
-                        {t('readMore')} <ExternalLink size={14} />
-                      </a>
+                      {article.url && article.url !== '#' && (
+                        <a href={article.url} target="_blank" rel="noopener noreferrer" className="news-link">
+                          {t('readMore')} <ExternalLink size={14} />
+                        </a>
+                      )}
                     </div>
                   </div>
                 ))}
@@ -273,11 +308,22 @@ function Advisor({ user, onLogout, onNavigate, onOpenVoiceAssistant }) {
                     <Droplets size={16} />
                     <span>{t('water')}: {crop.water_requirement}</span>
                   </div>
+                  {crop.duration_days && (
+                    <div className="crop-detail">
+                      <Calendar size={16} />
+                      <span>{crop.duration_days} days</span>
+                    </div>
+                  )}
                   <div className="crop-detail">
                     <TrendingUp size={16} />
                     <span>{t('yield')}: {crop.yield_potential}</span>
                   </div>
                 </div>
+                {crop.soil_compatibility && (
+                  <div style={{ marginTop: '10px', fontSize: '12px', color: '#555', background: '#f5f5f5', padding: '6px 10px', borderRadius: '6px' }}>
+                    🌱 <strong>Soil Match:</strong> {crop.soil_compatibility}
+                  </div>
+                )}
               </div>
             ))}
           </div>

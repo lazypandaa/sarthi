@@ -61,6 +61,21 @@ class AzureTableWrapper:
         elif "report" in self.table_name:
             self.default_pk = "reports"
             self.rk_field = "report_id"
+        elif "crop" in self.table_name:
+            self.default_pk = "crops"
+            self.rk_field = "crop_id"
+        elif "location" in self.table_name:
+            self.default_pk = "locations"
+            self.rk_field = "location_id"
+        elif "advisory" in self.table_name or "news" in self.table_name:
+            self.default_pk = "advisories"
+            self.rk_field = "advisory_id"
+        elif "market" in self.table_name or "price" in self.table_name:
+            self.default_pk = "markets"
+            self.rk_field = "record_id"
+        elif "soil" in self.table_name:
+            self.default_pk = "soil"
+            self.rk_field = "soil_id"
         else:
             self.default_pk = "general"
             self.rk_field = "id"
@@ -161,7 +176,7 @@ class AzureTableWrapper:
     def put_item(self, Item: dict) -> dict:
         """DynamoDB compatible put_item."""
         item = Item.copy()
-        rk_val = str(item.get(self.rk_field) or uuid.uuid4())
+        rk_val = str(item.get(self.rk_field) or item.get("RowKey") or item.get("id") or uuid.uuid4())
         pk_val = str(item.get("user_phone") or item.get("PartitionKey") or self.default_pk)
 
         item[self.rk_field] = rk_val

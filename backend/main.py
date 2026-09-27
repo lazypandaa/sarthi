@@ -32,6 +32,7 @@ from services.hindsight import (
     MemorySource,
 )
 from services.azure_table_db import get_azure_table_db
+from services.agri_service import get_agri_service
 
 load_dotenv()
 
@@ -356,11 +357,24 @@ def ensure_community_seed_data():
     except Exception as e:
         print(f"Failed to ensure community seed data: {e}")
 
+def ensure_agricultural_data():
+    """Ensure all authoritative Indian agricultural reference tables are seeded."""
+    try:
+        loc_table = azure_db.Table("sarthilocations")
+        res = loc_table.scan(Limit=5)
+        if len(res.get("Items", [])) < 5:
+            from ingestion.run_all_sync import run_all_sync
+            run_all_sync()
+            print("🌱 Completed full agricultural data sync on startup")
+    except Exception as e:
+        print(f"Failed to ensure agricultural reference data: {e}")
+
 @app.on_event("startup")
 async def startup_event():
     print("Database tables ready (Azure Table Storage)")
     ensure_demo_farmer()
     ensure_community_seed_data()
+    ensure_agricultural_data()
 
 @app.on_event("shutdown")
 async def shutdown_event():
@@ -1228,180 +1242,32 @@ async def get_village_leaderboard(limit: int = 10):
 
 @app.get("/api/crop-calendar")
 async def get_crop_calendar(current_user: dict = Depends(get_current_user), language: str = "en"):
-    """Get crop calendar with planting and harvesting schedules"""
+    """Get multi-season crop calendar with planting and harvesting schedules from local database"""
     try:
-        import json
-        
-        # Load crop calendar data
-        with open('crop_calendar.json', 'r') as f:
-            calendar_data = json.load(f)
-        
-        # Get current season
-        month = datetime.utcnow().month
-        season_map = calendar_data.get('current_season_info', {})
-        current_season = season_map.get(str(month), 'rabi')
-        
-        # Get user location and weather
         user_location = current_user.get('location', 'India')
-        city = user_location.split(',')[0].strip()
-        
-        # Fetch weather data
-        weather_info = None
-        try:
-            api_key = os.getenv('OPENWEATHER_API_KEY')
-            if api_key:
-                url = f"https://api.openweathermap.org/data/2.5/weather?q={city}&appid={api_key}&units=metric"
-                res = requests.get(url, timeout=5)
-                if res.status_code == 200:
-                    data = res.json()
-                    weather_info = {
-                        'temp': round(data['main']['temp']),
-                        'humidity': data['main']['humidity'],
-                        'description': data['weather'][0]['description']
-                    }
-        except Exception as e:
-            print(f"Weather fetch error: {e}")
-        
-        # Filter crops by current season
-        all_crops = calendar_data.get('crops', {})
-        recommended_crops = []
-        
-        for crop_id, crop_info in all_crops.items():
-            crop_season = crop_info.get('season', '')
-            if crop_season == current_season or crop_season == 'year-round':
-                crop_data = {
-                    'id': crop_id,
-                    'name': crop_info.get('name'),
-                    'hindi': crop_info.get('hindi'),
-                    'planting': crop_info.get('planting'),
-                    'harvesting': crop_info.get('harvesting'),
-                    'duration_days': crop_info.get('duration_days'),
-                    'tips': crop_info.get('tips'),
-                    'soil_type': crop_info.get('soil_type', 'Well-drained loamy soil'),
-                    'rainfall': crop_info.get('rainfall', 'Moderate')
-                }
-                recommended_crops.append(crop_data)
-        
-        # Fast translate using Amazon Translate if not English
-        if language != 'en' and recommended_crops:
-            try:
-                print(f"Translating {len(recommended_crops)} crops to {language}")
-                for crop in recommended_crops:
-                    # Translate crop name
-                    name_result = translate_client.translate_text(
-                        Text=crop['name'],
-                        SourceLanguageCode='en',
-                        TargetLanguageCode=language
-                    )
-                    # Translate tips
-                    tips_result = translate_client.translate_text(
-                        Text=crop['tips'],
-                        SourceLanguageCode='en',
-                        TargetLanguageCode=language
-                    )
-                    # Translate soil type
-                    soil_result = translate_client.translate_text(
-                        Text=crop['soil_type'],
-                        SourceLanguageCode='en',
-                        TargetLanguageCode=language
-                    )
-                    # Translate rainfall
-                    rainfall_result = translate_client.translate_text(
-                        Text=crop['rainfall'],
-                        SourceLanguageCode='en',
-                        TargetLanguageCode=language
-                    )
-                    
-                    # Translate planting months
-                    if crop.get('planting'):
-                        planting_start = translate_client.translate_text(
-                            Text=crop['planting']['start'],
-                            SourceLanguageCode='en',
-                            TargetLanguageCode=language
-                        )
-                        planting_end = translate_client.translate_text(
-                            Text=crop['planting']['end'],
-                            SourceLanguageCode='en',
-                            TargetLanguageCode=language
-                        )
-                        crop['planting']['start'] = planting_start['TranslatedText']
-                        crop['planting']['end'] = planting_end['TranslatedText']
-                    
-                    # Translate harvesting months
-                    if crop.get('harvesting'):
-                        harvest_start = translate_client.translate_text(
-                            Text=crop['harvesting']['start'],
-                            SourceLanguageCode='en',
-                            TargetLanguageCode=language
-                        )
-                        harvest_end = translate_client.translate_text(
-                            Text=crop['harvesting']['end'],
-                            SourceLanguageCode='en',
-                            TargetLanguageCode=language
-                        )
-                        crop['harvesting']['start'] = harvest_start['TranslatedText']
-                        crop['harvesting']['end'] = harvest_end['TranslatedText']
-                    
-                    print(f"Translated {crop['name']} -> {name_result['TranslatedText']}")
-                    crop['name'] = name_result['TranslatedText']
-                    crop['tips'] = tips_result['TranslatedText']
-                    crop['soil_type'] = soil_result['TranslatedText']
-                    crop['rainfall'] = rainfall_result['TranslatedText']
-                print(f"Translation complete for {language}")
-            except Exception as e:
-                print(f"Amazon Translate error: {e}")
-                import traceback
-                traceback.print_exc()
-        
-        return {
-            'current_season': current_season,
-            'user_location': user_location,
-            'weather': weather_info,
-            'recommended_crops': recommended_crops
-        }
+        agri = get_agri_service()
+        return agri.get_crop_calendar(user_location, language=language)
     except Exception as e:
         print(f"Crop calendar error: {e}")
-        import traceback
-        traceback.print_exc()
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.get("/api/hyperlocal-context")
 async def get_hyperlocal_context(current_user: dict = Depends(get_current_user)):
-    """Get hyperlocal agricultural context based on user location"""
+    """Get hyperlocal agricultural context based on user location from database"""
     try:
-        location = current_user.get("location", "")
-        parts = [p.strip() for p in location.split(",")]
-        
-        # Try to match district or state
-        query = {}
-        if len(parts) >= 2:
-            query = {"$or": [{"district": {"$regex": parts[0], "$options": "i"}}, {"state": {"$regex": parts[1], "$options": "i"}}]}
-        elif len(parts) == 1:
-            query = {"$or": [{"district": {"$regex": parts[0], "$options": "i"}}, {"state": {"$regex": parts[0], "$options": "i"}}]}
-        
-        context = hyperlocal_collection.find_one(query)
-        
-        if not context:
-            return {"message": "No hyperlocal data available for your location", "has_data": False}
-        
-        # Get current season
-        month = datetime.utcnow().month
-        if month in [6, 7, 8, 9, 10]:  # June-Oct
-            season = "kharif"
-        elif month in [11, 12, 1, 2, 3]:  # Nov-Mar
-            season = "rabi"
-        else:
-            season = "summer"
-        
+        location = current_user.get("location", "India")
+        agri = get_agri_service()
+        ctx = agri.get_hyperlocal_context(location)
         return {
             "has_data": True,
-            "location": f"{context['district']}, {context['state']}",
-            "soil_type": context["soil_type"],
-            "rainfall": context["rainfall"],
-            "current_season": season,
-            "recommended_crops": context["crops"].get(season, []),
-            "all_crops": context["crops"],
-            "pest_alerts": context.get("pest_alerts", [])
+            "location": f"{ctx['district']}, {ctx['state']}",
+            "soil_type": ctx["soil_type"],
+            "rainfall": ctx["rainfall"],
+            "current_season": ctx["current_season"],
+            "recommended_crops": ctx["recommended_crops"],
+            "all_crops": ctx["all_crops"],
+            "soil_parameters": ctx.get("soil_parameters", {}),
+            "source": ctx.get("source", "Official Data")
         }
     except Exception as e:
         print(f"Hyperlocal context error: {e}")
@@ -1746,25 +1612,38 @@ async def get_weather(request: WeatherRequest, current_user: dict = Depends(get_
         print(f"Weather error: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Error fetching weather: {str(e)}")
 
+@app.get("/api/markets")
+async def get_markets(current_user: dict = Depends(get_current_user), commodity: str = None):
+    """Get real-world APMC mandi wholesale prices from Agmarknet database"""
+    try:
+        location = current_user.get("location", "India")
+        agri = get_agri_service()
+        markets = agri.get_market_prices(location, commodity=commodity)
+        return {"markets": markets, "count": len(markets)}
+    except Exception as e:
+        print(f"Markets fetch error: {e}")
+        return {"markets": [], "count": 0}
+
 @app.post("/api/crop-prices")
 async def get_crop_prices(request: CropPriceRequest, current_user: dict = Depends(get_current_user)):
     try:
-        market = request.market or current_user.get("location", "Delhi").split(",")[0]
+        market = request.market or current_user.get("location", "India")
+        agri = get_agri_service()
+        mandi_data = agri.get_market_prices(market, commodity=request.crop)
         
-        base_prices = {
-            'wheat': 2000, 'rice': 2400, 'corn': 1600, 'barley': 1800,
-            'sugarcane': 5000, 'cotton': 6000, 'soybean': 4400, 'mustard': 5600,
-            'onion': 3000, 'potato': 1400, 'tomato': 3600, 'chili': 8000
-        }
-        
-        price = base_prices.get(request.crop.lower(), 2500)
+        if mandi_data:
+            price = mandi_data[0].get("modal_price", 2500)
+            mkt_name = mandi_data[0].get("market", market)
+        else:
+            price = 2500
+            mkt_name = market
         
         language_name = LANGUAGE_NAMES.get(request.language, "English")
         ai_response = azure_client.chat.completions.create(
             model=os.getenv("AZURE_OPENAI_DEPLOYMENT", "gpt-4o-mini"),
             messages=[
                 {"role": "system", "content": f"You are a crop price assistant. Provide crop price information in {language_name} language ONLY. Be concise and natural."},
-                {"role": "user", "content": f"Tell me the current price of {request.crop} in {market} market is ₹{price} per quintal"}
+                {"role": "user", "content": f"Tell me the current price of {request.crop} in {mkt_name} market is ₹{price} per quintal"}
             ],
             max_tokens=200,
             temperature=0.7
@@ -1774,7 +1653,7 @@ async def get_crop_prices(request: CropPriceRequest, current_user: dict = Depend
         print(f"Crop price response in {language_name}: {response_text}")
         
         audio_data = synthesize_speech(response_text, request.language)
-        return JSONResponse({"text": response_text, "audio_data": audio_data})
+        return JSONResponse({"text": response_text, "audio_data": audio_data, "price": price, "market": mkt_name})
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -1942,260 +1821,77 @@ Be concise."""
 
 @app.get("/api/weather")
 async def get_advisor_weather(current_user: dict = Depends(get_current_user)):
-    """Get weather data for Advisor page"""
+    """Get weather data for Advisor page with caching and risk warnings"""
     try:
         location = current_user.get("location", "Delhi")
-        city = location.split(",")[0].strip()
-        
-        api_key = os.getenv("OPENWEATHER_API_KEY")
-        if not api_key:
-            return {"temperature": 25, "humidity": 60, "rainfall": 0, "condition": "Clear", "alert": None}
-        
-        url = f"https://api.openweathermap.org/data/2.5/weather?q={city}&appid={api_key}&units=metric"
-        res = requests.get(url, timeout=10)
-        
-        if res.status_code != 200:
-            return {"temperature": 25, "humidity": 60, "rainfall": 0, "condition": "Clear", "alert": None}
-        
-        data = res.json()
-        
-        # Check for alerts
-        alert = None
-        if data["main"]["temp"] > 35:
-            alert = "High temperature alert. Ensure adequate irrigation."
-        elif data.get("rain", {}).get("1h", 0) > 10:
-            alert = "Heavy rainfall expected. Protect crops from waterlogging."
-        
-        return {
-            "temperature": round(data["main"]["temp"]),
-            "humidity": data["main"]["humidity"],
-            "rainfall": data.get("rain", {}).get("1h", 0),
-            "condition": data["weather"][0]["main"],
-            "alert": alert
-        }
+        agri = get_agri_service()
+        return agri.get_weather_with_cache(location)
     except Exception as e:
         print(f"Weather error: {e}")
-        return {"temperature": 25, "humidity": 60, "rainfall": 0, "condition": "Clear", "alert": None}
-
+        return {"temperature": 26, "humidity": 60, "rainfall": 0, "condition": "Clear", "alert": None}
 
 @app.get("/api/agriculture-news")
 async def get_agriculture_news(current_user: dict = Depends(get_current_user)):
-    """Get agriculture news for Advisor page"""
+    """Get official agriculture advisories and schemes from database"""
     try:
-        # Check MongoDB for cached news
-        news = list(mongo_db.agriculture_news.find().sort("published_at", -1).limit(6))
-        
-        if news:
-            for item in news:
-                item.pop('_id', None)
-            return news
-        
-        # Return sample news with images
-        sample_news = [
-            {
-                "title": "New PM-KISAN Scheme Benefits Announced for Small Farmers",
-                "summary": "Government announces increased financial assistance under PM-KISAN scheme. Eligible farmers will receive direct benefit transfers to support agricultural activities and improve rural livelihoods.",
-                "source": "Ministry of Agriculture",
-                "link": "https://pmkisan.gov.in",
-                "image": "https://images.unsplash.com/photo-1625246333195-78d9c38ad449?w=400&h=200&fit=crop",
-                "published_at": datetime.utcnow().isoformat()
-            },
-            {
-                "title": "IMD Predicts Normal Monsoon Rainfall This Season",
-                "summary": "India Meteorological Department forecasts normal monsoon rainfall across major agricultural regions. Farmers advised to prepare for timely sowing operations and optimize water management practices.",
-                "source": "IMD Weather",
-                "link": "https://mausam.imd.gov.in",
-                "image": "https://images.unsplash.com/photo-1527482797697-8795b05a13fe?w=400&h=200&fit=crop",
-                "published_at": datetime.utcnow().isoformat()
-            },
-            {
-                "title": "State Government Increases Organic Farming Subsidies",
-                "summary": "New policy provides enhanced subsidies for farmers transitioning to organic farming methods. Includes support for certification, training, and market linkages to promote sustainable agriculture.",
-                "source": "Agricultural Dept",
-                "link": "https://agricoop.gov.in",
-                "image": "https://images.unsplash.com/photo-1574943320219-553eb213f72d?w=400&h=200&fit=crop",
-                "published_at": datetime.utcnow().isoformat()
-            },
-            {
-                "title": "Drip Irrigation Systems Now Available at 50% Subsidy",
-                "summary": "Government launches new scheme offering 50% subsidy on drip irrigation systems. Aims to promote water conservation and improve crop yields through efficient irrigation technology.",
-                "source": "Water Resources",
-                "link": "https://pmksy.gov.in",
-                "image": "https://images.unsplash.com/photo-1592982537447-7440770cbfc9?w=400&h=200&fit=crop",
-                "published_at": datetime.utcnow().isoformat()
-            },
-            {
-                "title": "Crop Insurance Deadline Extended for Kharif Season",
-                "summary": "Pradhan Mantri Fasal Bima Yojana extends registration deadline. Farmers can now enroll until the end of the month to protect their crops against natural calamities and yield losses.",
-                "source": "PMFBY Portal",
-                "link": "https://pmfby.gov.in",
-                "image": "https://images.unsplash.com/photo-1560493676-04071c5f467b?w=400&h=200&fit=crop",
-                "published_at": datetime.utcnow().isoformat()
-            },
-            {
-                "title": "New Mobile App Launched for Real-Time Mandi Prices",
-                "summary": "Agriculture ministry launches mobile application providing real-time market prices from mandis across the country. Helps farmers make informed decisions about crop sales and market timing.",
-                "source": "eNAM Platform",
-                "link": "https://enam.gov.in",
-                "image": "https://images.unsplash.com/photo-1556761175-b413da4baf72?w=400&h=200&fit=crop",
-                "published_at": datetime.utcnow().isoformat()
-            }
-        ]
-        
-        return sample_news
+        location = current_user.get("location", "India")
+        agri = get_agri_service()
+        return agri.get_advisories(location)
     except Exception as e:
         print(f"Agriculture news error: {e}")
         return []
 
-
 @app.get("/api/environmental-profile")
 async def get_environmental_profile(current_user: dict = Depends(get_current_user)):
-    """Get environmental profile for current user"""
+    """Get environmental and soil profile for current user from database"""
     try:
-        # Check if user has profile in MongoDB
-        profile = mongo_db.environmental_profiles.find_one({"user_phone": current_user["phone_number"]})
+        location = current_user.get("location", "India")
+        agri = get_agri_service()
+        ctx = agri.get_hyperlocal_context(location)
+        soil_p = ctx.get("soil_parameters", {})
+        weather = agri.get_weather_with_cache(location)
         
-        if not profile:
-            # Create default profile
-            profile = {
-                "user_phone": current_user["phone_number"],
-                "location": current_user.get("location", "Unknown"),
-                "temperature": 12,
-                "humidity": 37,
-                "rainfall": 100,
-                "nitrogen": 50,
-                "phosphorus": 50,
-                "potassium": 50,
-                "soil_ph": 8.5,
-                "created_at": datetime.utcnow()
-            }
-            mongo_db.environmental_profiles.insert_one(profile)
-        
-        # Remove MongoDB _id
-        profile.pop('_id', None)
-        return profile
+        return {
+            "user_phone": current_user["phone_number"],
+            "location": location,
+            "district": ctx.get("district"),
+            "state": ctx.get("state"),
+            "soil_type": ctx.get("soil_type"),
+            "temperature": weather.get("temperature", 28),
+            "humidity": weather.get("humidity", 60),
+            "rainfall": ctx.get("rainfall", "900mm"),
+            "nitrogen": soil_p.get("nitrogen_kg_ha", 220),
+            "phosphorus": soil_p.get("phosphorus_kg_ha", 18),
+            "potassium": soil_p.get("potassium_kg_ha", 280),
+            "soil_ph": soil_p.get("ph", 7.2),
+            "organic_carbon": soil_p.get("organic_carbon", 0.55),
+            "recommended_amendments": soil_p.get("recommended_amendments", "Balanced NPK")
+        }
     except Exception as e:
         print(f"Environmental profile error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-
 @app.get("/api/crop-recommendations")
 async def get_crop_recommendations_smart(current_user: dict = Depends(get_current_user)):
-    """Get AI crop recommendations based on user location"""
+    """Get AI crop recommendations based on local soil, season, and climate from database"""
     try:
-        location = current_user.get("location", "")
-        
-        # Extract region from location (city, district, or state)
-        location_parts = [p.strip().lower() for p in location.split(",")]
-        
-        # Try to find crops suitable for user's region
-        query = {}
-        if location_parts:
-            # Search by region in crop data
-            query = {
-                "$or": [
-                    {"suitable_regions": {"$regex": location_parts[0], "$options": "i"}},
-                    {"climate_zone": {"$regex": location_parts[0], "$options": "i"}}
-                ]
-            }
-        
-        crops = list(mongo_db.crop_recommendations.find(query).limit(10))
-        
-        # If no location-specific crops found, get general recommendations
-        if not crops:
-            crops = list(mongo_db.crop_recommendations.find().limit(10))
-        
-        # Get user's environmental profile for compatibility scoring
-        profile = mongo_db.environmental_profiles.find_one({"user_phone": current_user["phone_number"]})
-        
-        if profile:
-            # Calculate compatibility for each crop
-            params = SoilParams(
-                nitrogen=profile.get("nitrogen", 50),
-                phosphorus=profile.get("phosphorus", 50),
-                potassium=profile.get("potassium", 50),
-                temperature=profile.get("temperature", 25),
-                humidity=profile.get("humidity", 60),
-                ph=profile.get("soil_ph", 7.0),
-                rainfall=profile.get("rainfall", 100)
-            )
-            
-            for crop in crops:
-                crop["soil_compatibility"] = calculate_compatibility(params, crop)
-            
-            # Sort by compatibility
-            crops.sort(key=lambda x: x.get("soil_compatibility", 0), reverse=True)
-        
-        for crop in crops:
-            crop.pop('_id', None)
-        
-        return crops
+        location = current_user.get("location", "India")
+        agri = get_agri_service()
+        return agri.get_crop_recommendations(location)
     except Exception as e:
         print(f"Crop recommendations error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-
 @app.get("/api/optimization-strategies")
 async def get_optimization_strategies(current_user: dict = Depends(get_current_user)):
-    """Generate AI-powered farming optimization strategies based on location and crops"""
+    """Get practical farming optimization strategies based on location and soil"""
     try:
         location = current_user.get("location", "India")
-        
-        # Get user's environmental profile
-        profile = mongo_db.environmental_profiles.find_one({"user_phone": current_user["phone_number"]})
-        
-        # Get top recommended crops
-        crops = list(mongo_db.crop_recommendations.find().limit(3))
-        crop_names = [c.get("crop_name", "") for c in crops]
-        
-        # Build context for AI
-        context = f"""Location: {location}
-Soil pH: {profile.get('soil_ph', 7.0) if profile else 7.0}
-Temperature: {profile.get('temperature', 25) if profile else 25}°C
-Humidity: {profile.get('humidity', 60) if profile else 60}%
-Rainfall: {profile.get('rainfall', 100) if profile else 100}mm
-Top Crops: {', '.join(crop_names)}"""
-        
-        # Generate strategies using AI
-        response = azure_client.chat.completions.create(
-            model=os.getenv("AZURE_OPENAI_DEPLOYMENT", "gpt-4o-mini"),
-            messages=[
-                {"role": "system", "content": "You are an agricultural expert. Generate 4 practical farming optimization strategies. Return ONLY a JSON array with objects containing: strategy_name, impact_level (High/Medium/Low), difficulty (Low/Medium/High), cost_effectiveness (percentage like 150%), badge (Minimal/Moderate/Peak). Be concise."},
-                {"role": "user", "content": f"Generate 4 farming optimization strategies for:\n{context}"}
-            ],
-            max_tokens=800,
-            temperature=0.7
-        )
-        
-        import json
-        strategies_text = response.choices[0].message.content.strip()
-        
-        # Extract JSON from response
-        if "```json" in strategies_text:
-            strategies_text = strategies_text.split("```json")[1].split("```")[0].strip()
-        elif "```" in strategies_text:
-            strategies_text = strategies_text.split("```")[1].split("```")[0].strip()
-        
-        try:
-            strategies = json.loads(strategies_text)
-            return strategies
-        except:
-            # Fallback to database strategies if AI parsing fails
-            strategies = list(mongo_db.optimization_strategies.find().limit(4))
-            for strategy in strategies:
-                strategy.pop('_id', None)
-            return strategies
-            
+        agri = get_agri_service()
+        return agri.get_optimization_strategies(location)
     except Exception as e:
         print(f"Optimization strategies error: {e}")
-        # Fallback to database
-        try:
-            strategies = list(mongo_db.optimization_strategies.find().limit(4))
-            for strategy in strategies:
-                strategy.pop('_id', None)
-            return strategies
-        except:
-            return []
+        return []
 
 
 @app.get("/api/farm-intelligence")
