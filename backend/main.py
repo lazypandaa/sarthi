@@ -344,10 +344,23 @@ def ensure_demo_farmer():
     except Exception as e:
         print(f"Failed to ensure demo farmer account: {e}")
 
+def ensure_community_seed_data():
+    """Ensure realistic agricultural community reports and village trust scores exist in Azure Table Storage."""
+    try:
+        res = community_reports_table.scan(Limit=5)
+        items = res.get('Items', [])
+        if len(items) < 5:
+            from seed_community_data import seed_community
+            seed_community()
+            print("🌾 Seeded realistic agricultural community reports and village trust records")
+    except Exception as e:
+        print(f"Failed to ensure community seed data: {e}")
+
 @app.on_event("startup")
 async def startup_event():
     print("Database tables ready (Azure Table Storage)")
     ensure_demo_farmer()
+    ensure_community_seed_data()
 
 @app.on_event("shutdown")
 async def shutdown_event():
@@ -1124,7 +1137,7 @@ async def submit_community_report(report: CommunityReportRequest, current_user: 
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.get("/api/community-reports")
-async def get_community_reports(current_user: dict = Depends(get_current_user), limit: int = 20):
+async def get_community_reports(current_user: dict = Depends(get_current_user), limit: int = 50):
     """Get recent community reports - show all reports if no village-specific index"""
     try:
         # Try to get all reports (fallback if index doesn't exist)
@@ -1459,49 +1472,66 @@ async def report_pest_outbreak(current_user: dict = Depends(get_current_user), p
 
 @app.get("/api/outbreak-map")
 async def get_outbreak_map(current_user: dict = Depends(get_current_user), language: str = "en"):
-    """Get pest/disease outbreak patterns across villages"""
+    """Get pest/disease outbreak patterns across villages with geographic clustering"""
     try:
-        from boto3.dynamodb.conditions import Key
-        from datetime import timedelta
         from collections import defaultdict
         
-        week_ago = (datetime.utcnow() - timedelta(days=7)).isoformat()
-        
-        # Get all recent reports
-        response = community_reports_table.scan(
-            FilterExpression='#ts > :week_ago AND (report_type = :pest OR report_type = :disease)',
-            ExpressionAttributeNames={'#ts': 'timestamp'},
-            ExpressionAttributeValues={
-                ':week_ago': week_ago,
-                ':pest': 'pest',
-                ':disease': 'disease'
-            }
-        )
-        
+        # Get all reports
+        response = community_reports_table.scan(Limit=100)
         reports = response.get('Items', [])
         
+        GEO_COORDINATES = {
+            "Sehore": {"lat": 23.2032, "lng": 77.0844, "state": "Madhya Pradesh"},
+            "Guntur": {"lat": 16.3067, "lng": 80.4365, "state": "Andhra Pradesh"},
+            "Nashik": {"lat": 19.9975, "lng": 73.7898, "state": "Maharashtra"},
+            "Warangal": {"lat": 17.9689, "lng": 79.5941, "state": "Telangana"},
+            "Karnal": {"lat": 29.6857, "lng": 76.9905, "state": "Haryana"},
+            "Coimbatore": {"lat": 11.0168, "lng": 76.9558, "state": "Tamil Nadu"},
+            "India": {"lat": 20.5937, "lng": 78.9629, "state": "National"}
+        }
+        
         # Group by village and type
-        outbreak_data = defaultdict(lambda: {'pest': 0, 'disease': 0, 'reports': []})
+        outbreak_data = defaultdict(lambda: {'pest': 0, 'disease': 0, 'weather': 0, 'success': 0, 'reports': []})
         
         for report in reports:
             village = report.get('village_id', 'Unknown')
-            report_type = report.get('report_type')
-            outbreak_data[village][report_type] += 1
-            outbreak_data[village]['reports'].append({
-                'type': report_type,
-                'crop': report.get('crop'),
-                'description': report.get('description_english', report.get('description')),
-                'severity': report.get('severity'),
-                'timestamp': report.get('timestamp')
-            })
+            report_type = report.get('report_type', '')
+            if report_type in ('pest', 'disease', 'weather', 'success'):
+                outbreak_data[village][report_type] += 1
+            else:
+                outbreak_data[village][report_type] = 1
+                
+            if report_type in ('pest', 'disease'):
+                outbreak_data[village]['reports'].append({
+                    'type': report_type,
+                    'crop': report.get('crop'),
+                    'description': report.get('description_english', report.get('description')),
+                    'severity': report.get('severity'),
+                    'timestamp': report.get('timestamp')
+                })
         
-        # Identify outbreaks (5+ reports)
+        # Identify outbreaks (2+ pest/disease reports constitutes an active monitored hotspot)
         outbreaks = []
         language_name = LANGUAGE_NAMES.get(language, 'English')
         
         for village, data in outbreak_data.items():
-            total = data['pest'] + data['disease']
-            if total >= 5:
+            pest_cnt = data.get('pest', 0)
+            dis_cnt = data.get('disease', 0)
+            total = pest_cnt + dis_cnt
+            if total >= 2:
+                geo = GEO_COORDINATES.get(village, {"lat": 20.5937, "lng": 78.9629, "state": "India"})
+                
+                # Dynamic alert levels based on report intensity
+                if total >= 4:
+                    alert_level = 'high'
+                elif total >= 3:
+                    alert_level = 'medium'
+                else:
+                    alert_level = 'low'
+                    
+                # Collect crops affected
+                crops = list(set([r.get('crop') for r in data['reports'] if r.get('crop')]))
+                
                 # Translate village name if not English
                 translated_village = village
                 if language != 'en':
@@ -1521,17 +1551,24 @@ async def get_outbreak_map(current_user: dict = Depends(get_current_user), langu
                 
                 outbreaks.append({
                     'village': translated_village,
-                    'pest_count': data['pest'],
-                    'disease_count': data['disease'],
+                    'state': geo.get('state', 'India'),
+                    'coordinates': {'lat': geo['lat'], 'lng': geo['lng']},
+                    'pest_count': pest_cnt,
+                    'disease_count': dis_cnt,
                     'total_reports': total,
-                    'alert_level': 'high' if total >= 10 else 'medium',
+                    'alert_level': alert_level,
+                    'crops_affected': crops,
                     'recent_reports': data['reports'][:5]
                 })
+        
+        # Sort outbreaks by alert severity and total reports descending
+        severity_order = {'high': 3, 'medium': 2, 'low': 1}
+        outbreaks.sort(key=lambda x: (severity_order.get(x['alert_level'], 0), x['total_reports']), reverse=True)
         
         return {
             'outbreaks': outbreaks,
             'total_reports': len(reports),
-            'affected_villages': len(outbreak_data)
+            'affected_villages': len(outbreaks)
         }
     except Exception as e:
         print(f"Outbreak map error: {e}")
