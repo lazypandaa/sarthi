@@ -3,7 +3,7 @@ import { User, Phone, Lock, MapPin, Globe, Loader } from 'lucide-react'
 import apiClient from './apiClient'
 import { API_URL } from './config'
 
-function Auth({ onLogin }) {
+function Auth({ onLogin, embedded = false, authCardRef = null, demoCredentials = null }) {
   const [isLogin, setIsLogin] = useState(true)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState('')
@@ -15,6 +15,19 @@ function Auth({ onLogin }) {
   })
   const [isDetectingLocation, setIsDetectingLocation] = useState(false)
   const [locationMethod, setLocationMethod] = useState('')
+
+  // Support pre-filling demo credentials when requested
+  useEffect(() => {
+    if (demoCredentials) {
+      setFormData(prev => ({
+        ...prev,
+        phone_number: demoCredentials.phone_number || prev.phone_number,
+        password: demoCredentials.password || prev.password
+      }))
+      setIsLogin(true)
+      setError('')
+    }
+  }, [demoCredentials])
 
   const detectPreciseLocation = async () => {
     setIsDetectingLocation(true)
@@ -118,8 +131,12 @@ function Auth({ onLogin }) {
   }
 
   return (
-    <div className="auth-container">
-      <div className="auth-card">
+    <div className={`auth-container ${embedded ? 'auth-embedded' : ''}`}>
+      <div 
+        ref={authCardRef}
+        id="hero-auth-card"
+        className={`auth-card ${embedded ? 'auth-card-embedded' : ''}`}
+      >
         <div className="auth-header">
           <div className="auth-logo">
             <div className="auth-logo-icon">🌾</div>

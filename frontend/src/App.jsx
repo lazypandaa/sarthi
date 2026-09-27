@@ -565,7 +565,7 @@ function App() {
   }
 
   if (showLanding && !isAuthenticated) {
-    return <Landing onGetStarted={() => setShowLanding(false)} />
+    return <Landing onGetStarted={() => setShowLanding(false)} onLogin={handleLogin} isAuthenticated={isAuthenticated} />
   }
 
   if (!isAuthenticated) {

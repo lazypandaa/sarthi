@@ -1,7 +1,55 @@
-import React from 'react'
+import React, { useRef, useState } from 'react'
 import { ArrowRight, Mic, Globe, Cloud, TrendingUp, Shield, Zap, CheckCircle, Users, Award } from 'lucide-react'
+import Auth from './Auth'
 
-function Landing({ onGetStarted }) {
+function Landing({ onGetStarted, onLogin, isAuthenticated = false }) {
+  const authCardRef = useRef(null)
+  const [demoCredentials, setDemoCredentials] = useState(null)
+
+  const handleGetStarted = (e) => {
+    e?.preventDefault?.()
+    if (isAuthenticated && onGetStarted) {
+      onGetStarted()
+      return
+    }
+    if (authCardRef.current) {
+      authCardRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' })
+      const phoneInput = authCardRef.current.querySelector('input[name="phone_number"]')
+      if (phoneInput) {
+        phoneInput.focus({ preventScroll: true })
+      }
+      authCardRef.current.classList.add('hero-auth-pulse')
+      setTimeout(() => {
+        authCardRef.current?.classList.remove('hero-auth-pulse')
+      }, 1500)
+    } else if (onGetStarted) {
+      onGetStarted()
+    }
+  }
+
+  const handleTryDemo = (e) => {
+    e?.preventDefault?.()
+    if (isAuthenticated && onGetStarted) {
+      onGetStarted()
+      return
+    }
+    setDemoCredentials({
+      phone_number: '+919999999001',
+      password: 'demoPassword123!'
+    })
+    if (authCardRef.current) {
+      authCardRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' })
+      authCardRef.current.classList.add('hero-auth-pulse')
+      setTimeout(() => {
+        const phoneInput = authCardRef.current?.querySelector('input[name="phone_number"]')
+        if (phoneInput) {
+          phoneInput.focus({ preventScroll: true })
+        }
+        authCardRef.current?.classList.remove('hero-auth-pulse')
+      }, 1200)
+    }
+  }
+
   return (
     <div className="landing-container">
       {/* Navigation */}
@@ -11,41 +59,54 @@ function Landing({ onGetStarted }) {
             <span className="nav-icon">🌾</span>
             <span className="nav-title">Sarthi</span>
           </div>
-          <button className="nav-cta" onClick={onGetStarted}>
+          <button className="nav-cta" onClick={handleGetStarted}>
             Launch App <ArrowRight size={18} />
           </button>
         </div>
       </nav>
 
-      {/* Hero Section */}
+      {/* Hero Section: Two-Column Composition */}
       <div className="landing-hero">
-        <div className="hero-content">
-          <h1 className="hero-title">Empowering Rural India with AI Voice Technology</h1>
-          <p className="hero-description">
-            Connect farmers with real-time information through multilingual AI assistance.
-            Get weather updates, crop prices, and government schemes in your local language.
-          </p>
-          <div className="hero-buttons">
-            <button className="btn-primary" onClick={onGetStarted}>
-              Get Started <ArrowRight size={20} />
-            </button>
-            <button className="btn-secondary" onClick={onGetStarted}>
-              Try Demo
-            </button>
+        <div className="hero-two-column">
+          {/* Left Column: Sarthi Hero Brand & Content */}
+          <div className="hero-left-column">
+            <h1 className="hero-title">Empowering Rural India with AI Voice Technology</h1>
+            <p className="hero-description">
+              Connect farmers with real-time information through multilingual AI assistance.
+              Get weather updates, crop prices, and government schemes in your local language.
+            </p>
+            <div className="hero-buttons">
+              <button className="btn-primary" onClick={handleGetStarted}>
+                Get Started <ArrowRight size={20} />
+              </button>
+              <button className="btn-secondary" onClick={handleTryDemo}>
+                Try Demo
+              </button>
+            </div>
+            <div className="hero-stats">
+              <div className="stat">
+                <div className="stat-number">9+</div>
+                <div className="stat-label">Languages</div>
+              </div>
+              <div className="stat">
+                <div className="stat-number">100%</div>
+                <div className="stat-label">Voice Enabled</div>
+              </div>
+              <div className="stat">
+                <div className="stat-number">24/7</div>
+                <div className="stat-label">Available</div>
+              </div>
+            </div>
           </div>
-          <div className="hero-stats">
-            <div className="stat">
-              <div className="stat-number" style={{color: '#ffffff'}}>9+</div>
-              <div className="stat-label" style={{color: '#e5e7eb'}}>Languages</div>
-            </div>
-            <div className="stat">
-              <div className="stat-number" style={{color: '#ffffff'}}>100%</div>
-              <div className="stat-label" style={{color: '#e5e7eb'}}>Voice Enabled</div>
-            </div>
-            <div className="stat">
-              <div className="stat-number" style={{color: '#ffffff'}}>24/7</div>
-              <div className="stat-label" style={{color: '#e5e7eb'}}>Available</div>
-            </div>
+
+          {/* Right Column: Embedded Real Auth / Sign In Card */}
+          <div className="hero-right-column">
+            <Auth 
+              onLogin={onLogin}
+              embedded={true}
+              authCardRef={authCardRef}
+              demoCredentials={demoCredentials}
+            />
           </div>
         </div>
       </div>
