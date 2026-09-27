@@ -34,3 +34,17 @@ def test_signup_and_login_flow():
     me_data = me_res.json()
     assert me_data["phone_number"] == test_phone
     assert me_data["language"] == "hi"
+
+def test_try_demo_farmer_login():
+    """Verify that clicking Try Demo and signing in with demo credentials succeeds unconditionally."""
+    demo_res = client.post("/api/login", json={
+        "phone_number": "+919999999001",
+        "password": "demoPassword123!"
+    })
+    assert demo_res.status_code == 200
+    token = demo_res.json()["access_token"]
+    
+    me_res = client.get("/api/me", headers={"Authorization": f"Bearer {token}"})
+    assert me_res.status_code == 200
+    assert me_res.json()["phone_number"] == "+919999999001"
+

@@ -15,6 +15,7 @@ function Auth({ onLogin, embedded = false, authCardRef = null, demoCredentials =
   })
   const [isDetectingLocation, setIsDetectingLocation] = useState(false)
   const [locationMethod, setLocationMethod] = useState('')
+  const [isDemoLoaded, setIsDemoLoaded] = useState(false)
 
   // Support pre-filling demo credentials when requested
   useEffect(() => {
@@ -26,6 +27,7 @@ function Auth({ onLogin, embedded = false, authCardRef = null, demoCredentials =
       }))
       setIsLogin(true)
       setError('')
+      setIsDemoLoaded(true)
     }
   }, [demoCredentials])
 
@@ -246,6 +248,25 @@ function Auth({ onLogin, embedded = false, authCardRef = null, demoCredentials =
           )}
 
           {error && <div className="auth-error">{error}</div>}
+
+          {isDemoLoaded && !error && (
+            <div style={{
+              background: '#ecfdf5',
+              border: '1px solid #a7f3d0',
+              color: '#065f46',
+              fontSize: '0.84rem',
+              fontWeight: 600,
+              padding: '8px 12px',
+              borderRadius: '10px',
+              textAlign: 'center',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '6px'
+            }}>
+              <span>🌾 Demo account ready — click Sign In to enter!</span>
+            </div>
+          )}
 
           <button type="submit" disabled={isLoading} className="auth-submit">
             {isLoading ? (
