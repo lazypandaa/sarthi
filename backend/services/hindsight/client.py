@@ -48,6 +48,45 @@ class HindsightClient:
         """Returns True if the client was initialized with valid credentials."""
         return self._raw_client is not None
 
+    def close(self):
+        """Cleanly closes underlying client sessions."""
+        if self._raw_client is not None:
+            try:
+                if hasattr(self._raw_client, "close"):
+                    self._raw_client.close()
+            except Exception as e:
+                logger.debug(f"Error closing raw Hindsight client session: {e}")
+
+    def _run_coro(self, coro_fn, sync_fn):
+        """
+        Executes an operation safely. If an asyncio event loop is currently active (e.g. inside
+        FastAPI / uvicorn async handlers), runs coro_fn() in a dedicated worker thread with
+        its own event loop to prevent 'RuntimeError: This event loop is already running'.
+        If no event loop is running, invokes sync_fn() directly.
+        """
+        import asyncio
+        import concurrent.futures
+
+        try:
+            asyncio.get_running_loop()
+            in_loop = True
+        except RuntimeError:
+            in_loop = False
+
+        if not in_loop:
+            return sync_fn()
+
+        def worker():
+            new_loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(new_loop)
+            try:
+                return new_loop.run_until_complete(coro_fn())
+            finally:
+                new_loop.close()
+
+        with concurrent.futures.ThreadPoolExecutor(max_workers=1) as pool:
+            return pool.submit(worker).result()
+
     def health_check(self) -> Dict[str, Any]:
         """
         Check health/connectivity of Hindsight service without leaking credentials.
@@ -70,10 +109,14 @@ class HindsightClient:
             }
 
         try:
-            # Check version or recall an empty test probe with minimum tokens to minimize cost
-            # Many Hindsight deployments provide a version or profile endpoint
-            if hasattr(self._raw_client, "get_version"):
-                v = self._raw_client.get_version()
+            if hasattr(self._raw_client, "aget_version"):
+                v = self._run_coro(
+                    lambda: self._raw_client.aget_version(),
+                    lambda: self._raw_client.get_version(),
+                )
+                if hasattr(v, "close") and callable(getattr(v, "close")):
+                    v.close()
+                    v = "mocked"
                 return {"status": "healthy", "available": True, "version": str(v), "bank_id": self.config.bank_id}
             
             return {
@@ -115,11 +158,19 @@ class HindsightClient:
             clean_metadata = {str(k): str(v) for k, v in (metadata or {}).items()}
             clean_tags = [str(t) for t in (tags or [])]
 
-            response = self._raw_client.retain(
-                bank_id=bank_id,
-                content=content,
-                metadata=clean_metadata if clean_metadata else None,
-                tags=clean_tags if clean_tags else None,
+            response = self._run_coro(
+                lambda: self._raw_client.aretain(
+                    bank_id=bank_id,
+                    content=content,
+                    metadata=clean_metadata if clean_metadata else None,
+                    tags=clean_tags if clean_tags else None,
+                ),
+                lambda: self._raw_client.retain(
+                    bank_id=bank_id,
+                    content=content,
+                    metadata=clean_metadata if clean_metadata else None,
+                    tags=clean_tags if clean_tags else None,
+                ),
             )
 
             return {
@@ -158,13 +209,23 @@ class HindsightClient:
         try:
             clean_tags = [str(t) for t in (tags or [])] if tags else None
 
-            response = self._raw_client.recall(
-                bank_id=bank_id,
-                query=query,
-                tags=clean_tags,
-                tags_match=tags_match,
-                max_tokens=2048,
-                budget="mid",
+            response = self._run_coro(
+                lambda: self._raw_client.arecall(
+                    bank_id=bank_id,
+                    query=query,
+                    tags=clean_tags,
+                    tags_match=tags_match,
+                    max_tokens=2048,
+                    budget="mid",
+                ),
+                lambda: self._raw_client.recall(
+                    bank_id=bank_id,
+                    query=query,
+                    tags=clean_tags,
+                    tags_match=tags_match,
+                    max_tokens=2048,
+                    budget="mid",
+                ),
             )
 
             raw_results = getattr(response, "results", None)

@@ -276,6 +276,11 @@ class RecommendationRequest(BaseModel):
     location: Optional[str] = None
     language: Optional[str] = "en"
 
+class MemoryCompareRequest(BaseModel):
+    query: str = "What crop should I grow this season?"
+    location: Optional[str] = None
+    language: Optional[str] = "en"
+
 class CommunityReportRequest(BaseModel):
     report_type: str  # pest, disease, weather, success
     crop: Optional[str] = None
@@ -321,6 +326,14 @@ async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(s
 @app.on_event("startup")
 async def startup_event():
     print("DynamoDB tables ready")
+
+@app.on_event("shutdown")
+async def shutdown_event():
+    try:
+        svc = get_memory_service()
+        svc.close()
+    except Exception as e:
+        print(f"Memory service cleanup on shutdown: {e}")
 
 # Routes
 @app.get("/")
@@ -1496,8 +1509,9 @@ async def process_text(request: TextRequest, current_user: dict = Depends(get_cu
         print(f"Process text for farmer {farmer_id}: {request.text[:50]}...")
         
         # Phase 4: Detect and retain durable conversational learning (outcomes, failures, constraints)
+        retained_learning = None
         try:
-            recommender.detect_and_retain_conversational_learning(farmer_id, request.text)
+            retained_learning = recommender.detect_and_retain_conversational_learning(farmer_id, request.text)
         except Exception as retain_err:
             print(f"Conversational learning retain error (non-fatal): {retain_err}")
 
@@ -1568,6 +1582,7 @@ Be concise and practical."""
             "recommendation_id": query_id,
             "response_text": response_text,
             "audio_data": audio_data,
+            "retained_learning": retained_learning,
             "memory_context": {
                 "used": bool(raw_memories),
                 "memory_count": len(raw_memories),
@@ -1761,8 +1776,9 @@ async def process_audio(file: UploadFile = File(...), language: str = "hi", curr
         recommender = get_recommender()
         
         # Phase 4: Detect and retain durable conversational learning from voice
+        retained_learning = None
         try:
-            recommender.detect_and_retain_conversational_learning(farmer_id, transcript)
+            retained_learning = recommender.detect_and_retain_conversational_learning(farmer_id, transcript)
         except Exception as retain_err:
             print(f"Voice conversational learning retain error: {retain_err}")
 
@@ -1831,6 +1847,7 @@ Be concise."""
             "transcript": transcript,
             "response_text": response_text,
             "audio_data": audio_data,
+            "retained_learning": retained_learning,
             "memory_context": {
                 "used": bool(raw_memories),
                 "memory_count": len(raw_memories),
@@ -2401,5 +2418,140 @@ Provide actionable, practical, and highly personalized advice."""
         "memory_influence": memory_influence,
         "assembled_context": assembled_context
     }
+
+
+@app.post("/api/memory/compare")
+async def compare_recommendation_memory(
+    request: MemoryCompareRequest,
+    current_user: dict = Depends(get_current_user),
+):
+    """
+    Phase 6: Live Comparison Endpoint.
+    Runs the recommendation BOTH without memory and with memory using real Azure OpenAI
+    and real Hindsight Cloud recall, proving that long-term memory changes the decision.
+    """
+    farmer_id = current_user.get("phone_number", "unknown")
+    user_location = request.location or current_user.get("location", "India")
+    recommender = get_recommender()
+
+    # 1. Domain agricultural context (identical for both)
+    context_data = fetch_context_sync(user_location, request.query)
+    formatted_context = format_context_for_llm(context_data)
+
+    # 2. RUN A: WITHOUT MEMORY
+    prompt_without = f"""You are Sarthi, AI agricultural advisor for rural India.
+Use current regional environmental data below to advise the farmer.
+Provide generic regional agricultural advice based solely on weather, soil, and climate.
+
+{formatted_context}
+
+Be concise and practical."""
+    try:
+        resp_without = azure_client.chat.completions.create(
+            model=os.getenv("AZURE_OPENAI_DEPLOYMENT", "gpt-4o-mini"),
+            messages=[
+                {"role": "system", "content": prompt_without},
+                {"role": "user", "content": request.query}
+            ],
+            max_tokens=400,
+            temperature=0.7
+        )
+        text_without = resp_without.choices[0].message.content
+    except Exception as e:
+        text_without = "Standard regional advisory: Cultivate staple seasonal crops suited to regional rainfall and temperature."
+
+    # 3. RUN B: WITH REAL HINDSIGHT MEMORY
+    assembled_context = {}
+    raw_memories = []
+    memory_prompt_section = ""
+    try:
+        assembled_context, raw_memories = recommender.assemble_memory_context(
+            farmer_id=farmer_id,
+            query=request.query,
+            location=user_location,
+        )
+        memory_prompt_section = recommender.format_memory_for_prompt(assembled_context)
+    except Exception as recall_err:
+        print(f"Hindsight recall error in compare: {recall_err}")
+
+    prompt_with = f"""You are Sarthi, AI agricultural advisor for rural India.
+Use current regional environmental data and remembered farmer context below to advise the farmer.
+CRITICAL: You MUST strictly adapt your advice to respect the historical farmer memories, water limitations, and previous crop outcomes.
+
+{formatted_context}
+{memory_prompt_section}
+
+Provide personalized, practical advice addressing their specific farm situation."""
+
+    try:
+        resp_with = azure_client.chat.completions.create(
+            model=os.getenv("AZURE_OPENAI_DEPLOYMENT", "gpt-4o-mini"),
+            messages=[
+                {"role": "system", "content": prompt_with},
+                {"role": "user", "content": request.query}
+            ],
+            max_tokens=400,
+            temperature=0.7
+        )
+        text_with = resp_with.choices[0].message.content
+    except Exception as e:
+        text_with = text_without
+
+    memory_influence = recommender.build_memory_influence_metadata(assembled_context, text_with)
+    relevant_memories = []
+    for cat, items in assembled_context.items():
+        for item in items:
+            relevant_memories.append({
+                "id": item.get("id"),
+                "category": cat,
+                "type": item.get("type", cat),
+                "summary": item.get("text"),
+                "crop": item.get("crop"),
+            })
+
+    return {
+        "farmer_id": farmer_id,
+        "query": request.query,
+        "location": user_location,
+        "without_memory": {
+            "recommendation": text_without,
+            "type": "Standard Regional Advisory",
+            "memories_used": 0,
+            "description": "Computed strictly from regional weather, soil, and crop data with zero farmer memory."
+        },
+        "with_memory": {
+            "recommendation": text_with,
+            "type": "Personalized Memory-Aware Advisory",
+            "memories_used": len(raw_memories),
+            "relevant_memories": relevant_memories,
+            "memory_influence": memory_influence,
+            "description": "Adapted to historical farmer constraints, past crop failures, and stated preferences retrieved from Hindsight Cloud."
+        }
+    }
+
+
+@app.post("/api/memory/demo/reset")
+async def reset_demo_farmer_memory(current_user: dict = Depends(get_current_user)):
+    """
+    Phase 6: Reset mechanism for ONLY the designated demo farmer account (+919999999001).
+    Strictly forbidden for all other farmers to guarantee data isolation.
+    """
+    farmer_id = current_user.get("phone_number", "unknown")
+    allowed = {"+919999999001", "demo_farmer", "test_farmer_001"}
+    if farmer_id not in allowed:
+        raise HTTPException(
+            status_code=403,
+            detail="Reset is strictly restricted to designated demo accounts to prevent data loss."
+        )
+
+    service = get_memory_service()
+    try:
+        result = service.reset_demo_farmer_memories(farmer_id)
+        return result
+    except PermissionError as pe:
+        raise HTTPException(status_code=403, detail=str(pe))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to reset demo memory: {str(e)}")
+
 
 

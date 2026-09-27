@@ -20,12 +20,13 @@ import axios from 'axios'
 import { API_URL } from './config'
 import Navbar from './Navbar'
 import { getTranslation } from './translations'
+import LearningDemo from './LearningDemo'
 import './Memory.css'
 
 export default function MemoryDashboard({ user, onNavigate, onLogout, language = 'en' }) {
   const t = (key) => getTranslation(language, key)
 
-  const [activeTab, setActiveTab] = useState('whatIRemember') // 'whatIRemember' | 'whatChanged' | 'history'
+  const [activeTab, setActiveTab] = useState('demo') // 'demo' | 'whatIRemember' | 'whatChanged' | 'history'
   const [loading, setLoading] = useState(true)
   const [summaryData, setSummaryData] = useState(null)
   const [queryHistory, setQueryHistory] = useState([])
@@ -176,6 +177,14 @@ export default function MemoryDashboard({ user, onNavigate, onLogout, language =
         <div className="memory-tabs">
           <button
             type="button"
+            className={`memory-tab-btn ${activeTab === 'demo' ? 'active' : ''}`}
+            onClick={() => setActiveTab('demo')}
+          >
+            <Sparkles size={18} color="#059669" />
+            <span>Learning Demo & Timeline</span>
+          </button>
+          <button
+            type="button"
             className={`memory-tab-btn ${activeTab === 'whatIRemember' ? 'active' : ''}`}
             onClick={() => setActiveTab('whatIRemember')}
           >
@@ -199,6 +208,13 @@ export default function MemoryDashboard({ user, onNavigate, onLogout, language =
             <span>Recommendation History</span>
           </button>
         </div>
+
+        {/* ============================================================== */}
+        {/* TAB 0: LEARNING DEMO & TIMELINE (Judge Demonstration)          */}
+        {/* ============================================================== */}
+        {activeTab === 'demo' && (
+          <LearningDemo user={user} onRefreshSummary={fetchMemorySummary} />
+        )}
 
         {/* ============================================================== */}
         {/* TAB 1: WHAT I REMEMBER (4 Human-Friendly Sections)             */}
@@ -252,9 +268,9 @@ export default function MemoryDashboard({ user, onNavigate, onLogout, language =
             ) : memoryCount === 0 ? (
               <div className="memory-section-card" style={{ textAlign: 'center', padding: '50px 30px' }}>
                 <Brain size={48} color="#94a3b8" style={{ margin: '0 auto 16px' }} />
-                <h3 style={{ color: '#1e293b', marginBottom: '8px' }}>You're Just Getting Started</h3>
+                <h3 style={{ color: '#1e293b', marginBottom: '8px' }}>Your farming journey is just beginning</h3>
                 <p style={{ color: '#64748b', maxWidth: '520px', margin: '0 auto 20px', lineHeight: 1.6 }}>
-                  As we learn from your farming queries, constraints, and season feedback, personalized memories will appear here. You can also teach Sarthi above!
+                  As you share experiences with Sarthi, important information will appear here.
                 </p>
               </div>
             ) : (

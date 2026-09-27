@@ -1,19 +1,44 @@
 import React, { useState } from 'react'
-import { Brain, ChevronDown, ChevronUp, ShieldCheck, Edit3, Sparkles } from 'lucide-react'
+import { Brain, ChevronDown, ChevronUp, ShieldCheck, Edit3, Sparkles, CheckCircle2 } from 'lucide-react'
 import './Memory.css'
 
 export default function MemoryInfluenceCard({
   memoryContext,
   relevantMemories = [],
   memoryInfluence = [],
+  retainedLearning = null,
+  isMemoryError = false,
   onOpenCorrection
 }) {
   const isUsed = Boolean(memoryContext?.used || (relevantMemories && relevantMemories.length > 0) || (memoryInfluence && memoryInfluence.length > 0))
-  const [expanded, setExpanded] = useState(isUsed)
+  const [expanded, setExpanded] = useState(isUsed || Boolean(retainedLearning))
 
   const memoryCount = memoryContext?.memory_count || relevantMemories?.length || memoryInfluence?.length || 0
 
-  if (!isUsed && (!relevantMemories || relevantMemories.length === 0)) {
+  if (isMemoryError) {
+    return (
+      <div className="memory-influence-card" style={{ background: '#fffbeb', borderColor: '#fde68a' }}>
+        <div className="memory-influence-header" onClick={() => setExpanded(!expanded)}>
+          <div className="memory-influence-badge" style={{ color: '#92400e' }}>
+            <Sparkles size={16} color="#d97706" />
+            <span>Personal memory temporarily unavailable</span>
+          </div>
+          <button className="memory-influence-toggle-btn" type="button">
+            {expanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+          </button>
+        </div>
+        {expanded && (
+          <div className="memory-influence-details">
+            <p style={{ margin: 0, fontSize: '0.85rem', color: '#92400e' }}>
+              Personal memory is temporarily unavailable. Providing robust agricultural advice using current regional weather, soil, and market information.
+            </p>
+          </div>
+        )}
+      </div>
+    )
+  }
+
+  if (!isUsed && (!relevantMemories || relevantMemories.length === 0) && !retainedLearning) {
     return (
       <div className="memory-influence-card" style={{ background: '#f8fafc', borderColor: '#e2e8f0' }}>
         <div className="memory-influence-header" onClick={() => setExpanded(!expanded)}>
@@ -41,7 +66,7 @@ export default function MemoryInfluenceCard({
       <div className="memory-influence-header" onClick={() => setExpanded(!expanded)}>
         <div className="memory-influence-badge">
           <Brain size={18} color="#10b981" />
-          <span>Personalized using your past experience</span>
+          <span>{retainedLearning ? "Learned new farm experience" : "Personalized using your past experience"}</span>
           <span style={{
             fontSize: '0.78rem',
             background: '#d1fae5',
@@ -50,7 +75,7 @@ export default function MemoryInfluenceCard({
             borderRadius: '12px',
             fontWeight: 700
           }}>
-            {memoryCount} {memoryCount === 1 ? 'memory' : 'memories'} recalled
+            {retainedLearning ? "Memory Retained" : `${memoryCount} ${memoryCount === 1 ? 'memory' : 'memories'} recalled`}
           </span>
         </div>
         <button className="memory-influence-toggle-btn" type="button">
@@ -61,6 +86,31 @@ export default function MemoryInfluenceCard({
 
       {expanded && (
         <div className="memory-influence-details">
+          {/* Subtle Learned Confirmation from Current Dialogue */}
+          {retainedLearning && (
+            <div className="learning-confirmation-card" style={{ marginBottom: '14px' }}>
+              <div className="learning-confirmation-header">
+                <CheckCircle2 size={18} color="#059669" />
+                <div>
+                  <strong>Learned from your experience</strong>
+                  <span style={{ fontSize: '0.78rem', color: '#065f46', marginLeft: '6px' }}>
+                    (Persisted in Hindsight Cloud)
+                  </span>
+                </div>
+              </div>
+              {retainedLearning.extracted_facts && retainedLearning.extracted_facts.length > 0 && (
+                <div className="learning-confirmation-facts">
+                  {retainedLearning.extracted_facts.map((fact, idx) => (
+                    <div key={idx} className="learning-fact-pill">
+                      <span>✓</span>
+                      <span>{fact}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+
           {/* Section: Based on what I remember */}
           <div className="memory-subheading">
             <span>🌾 Based on what I remember:</span>

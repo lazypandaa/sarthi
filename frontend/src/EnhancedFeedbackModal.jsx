@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { ThumbsUp, ThumbsDown, Edit3, Sprout, CheckCircle2, X, Send } from 'lucide-react'
+import { ThumbsUp, ThumbsDown, Edit3, Sprout, CheckCircle2, X, Send, Loader } from 'lucide-react'
 import axios from 'axios'
 import { API_URL } from './config'
 import './Memory.css'
@@ -62,7 +62,7 @@ export default function EnhancedFeedbackModal({
     <div className="feedback-modal-enhanced">
       <div className="feedback-modal-header">
         <h4>
-          <span>🌾 Farm Feedback & Learning</span>
+          <span>🌾 Was this advice useful?</span>
         </h4>
         <button type="button" className="feedback-close-btn" onClick={onClose}>
           <X size={18} />
@@ -70,7 +70,17 @@ export default function EnhancedFeedbackModal({
       </div>
 
       <div className="feedback-modal-body">
-        {submittedSuccess ? (
+        {isSubmitting ? (
+          <div style={{ textAlign: 'center', padding: '36px 16px', color: '#059669' }}>
+            <Loader size={30} className="loading" style={{ margin: '0 auto 12px' }} />
+            <p style={{ fontWeight: 700, fontSize: '0.95rem', margin: '0 0 4px 0' }}>
+              Learning from your feedback...
+            </p>
+            <span style={{ fontSize: '0.8rem', color: '#64748b' }}>
+              Retaining durable memory in Hindsight Cloud
+            </span>
+          </div>
+        ) : submittedSuccess ? (
           <div className="feedback-toast-success">
             <CheckCircle2 size={20} color="#059669" />
             <div>
@@ -87,21 +97,21 @@ export default function EnhancedFeedbackModal({
                 className={`feedback-mode-btn ${feedbackMode === 'simple' ? 'active' : ''}`}
                 onClick={() => setFeedbackMode('simple')}
               >
-                Helpful?
+                👍 / 👎 Useful?
               </button>
               <button
                 type="button"
                 className={`feedback-mode-btn ${feedbackMode === 'correction' ? 'active' : ''}`}
                 onClick={() => setFeedbackMode('correction')}
               >
-                ✏️ Correction
+                ✏️ Correct this advice
               </button>
               <button
                 type="button"
                 className={`feedback-mode-btn ${feedbackMode === 'outcome' ? 'active' : ''}`}
                 onClick={() => setFeedbackMode('outcome')}
               >
-                🌾 Report Outcome
+                🌾 Record outcome
               </button>
             </div>
 

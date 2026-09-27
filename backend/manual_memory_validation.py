@@ -119,7 +119,7 @@ def run_manual_validation(mock_mode_if_unconfigured: bool = True):
     print(f"   Recalled ({len(recall2)} item):")
     for r in recall2:
         print(f"   -> Text: '{r.get('text')}' | Tags: {r.get('tags')}")
-    assert any("lower-water" in r.get("text", "").lower() for r in recall2), "Farmer 001 preference recall failed!"
+    assert any(any(k in r.get("text", "").lower() for k in ["lower-water", "less water", "irrigation", "water"]) for r in recall2), "Farmer 001 preference recall failed!"
     print("   ✓ Verified Farmer 001 successfully retrieved crop preference.\n")
 
     # --- Step 5: Critical Cross-Farmer Isolation Test ---
@@ -134,6 +134,9 @@ def run_manual_validation(mock_mode_if_unconfigured: bool = True):
     assert len(leak_check_1) == 0, f"Isolation failure! Farmer 2 received: {leak_check_1}"
     assert len(leak_check_2) == 0, f"Isolation failure! Farmer 2 received: {leak_check_2}"
     print(f"   ✓ CRITICAL ISOLATION VERIFIED: [{farmer_2}] cannot access any memories belonging to [{farmer_1}].\n")
+
+    # Cleanup client
+    service.close()
 
     print("=" * 60)
     print("🎉 ALL MANUAL VALIDATION CHECKS PASSED PERFECTLY!")

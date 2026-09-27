@@ -49,6 +49,7 @@ OVERRIDE_PATTERNS = [
 FAILURE_PATTERNS = [
     r"(?:failed|ruined|died|loss|did\s+not\s+work|didn't\s+work|poor\s+yield|destroyed)\s+(?:because|due\s+to|since)?\s*([^\.]+)",
     r"tried\s+([a-zA-Z]+)\s+.*(?:failed|didn't\s+work|died)",
+    r"([a-zA-Z]+)\s+.*(?:crop\s+)?failed",
 ]
 
 SUCCESS_PATTERNS = [
@@ -353,7 +354,17 @@ class MemoryAwareRecommender:
                 if recommendation_id:
                     meta["related_recommendation_id"] = recommendation_id
 
-                return self.memory_service.retain_memory(
+                extracted_facts = []
+                if any(w in msg_lower for w in ["limited irrigation", "not enough water", "insufficient irrigation", "borewell", "water"]):
+                    extracted_facts.append("Limited irrigation")
+                if crop:
+                    extracted_facts.append(f"Previous {crop.lower()} failure")
+                else:
+                    extracted_facts.append("Previous crop failure")
+                if any(w in msg_lower for w in ["water", "irrigation", "borewell"]):
+                    extracted_facts.append("Water-related constraint")
+
+                res = self.memory_service.retain_memory(
                     farmer_id=farmer_id,
                     memory_type=MemoryType.CROP_HISTORY,
                     content=content,
@@ -361,6 +372,11 @@ class MemoryAwareRecommender:
                     crop=crop,
                     source=MemorySource.FARMER,
                 )
+                if isinstance(res, dict):
+                    res["extracted_facts"] = extracted_facts
+                    res["memory_type"] = "crop_history"
+                    res["summary"] = content
+                return res
 
         # 2. Detect explicit success (Outcome)
         # e.g., "Groundnut worked well this season"
@@ -377,7 +393,7 @@ class MemoryAwareRecommender:
                 if recommendation_id:
                     meta["related_recommendation_id"] = recommendation_id
 
-                return self.memory_service.retain_memory(
+                res = self.memory_service.retain_memory(
                     farmer_id=farmer_id,
                     memory_type=MemoryType.OUTCOME,
                     content=content,
@@ -385,28 +401,56 @@ class MemoryAwareRecommender:
                     crop=crop,
                     source=MemorySource.FARMER,
                 )
+                if isinstance(res, dict):
+                    res["extracted_facts"] = [f"Successful {crop.lower()} harvest", "Positive outcome history"]
+                    res["memory_type"] = "outcome"
+                    res["summary"] = content
+                return res
 
         # 3. Detect explicit constraint disclosure
         # e.g., "I have limited irrigation", "No borewell on my land", "Only 2 hours of electricity"
-        if any(w in msg_lower for w in ["limited irrigation", "no borewell", "water shortage", "not enough water", "no water", "dry land"]):
-            return self.memory_service.retain_memory(
+        if any(w in msg_lower for w in [
+            "limited irrigation", "no borewell", "water shortage", "not enough water", "no water",
+            "dry land", "one hour of borewell", "hour of borewell", "borewell water", "insufficient irrigation",
+            "hours of electricity", "water limitation"
+        ]):
+            extracted_facts = ["Limited irrigation"]
+            if any(w in msg_lower for w in ["one hour", "1 hour", "hour of borewell"]):
+                extracted_facts.append("Borewell limited to 1 hour daily")
+            extracted_facts.append("Water-related constraint")
+
+            res = self.memory_service.retain_memory(
                 farmer_id=farmer_id,
                 memory_type=MemoryType.CONSTRAINT,
                 content=f"Farmer operational constraint: {msg}",
                 metadata={"source": MemorySource.FARMER.value},
                 source=MemorySource.FARMER,
             )
+            if isinstance(res, dict):
+                res["extracted_facts"] = extracted_facts
+                res["memory_type"] = "constraint"
+                res["summary"] = f"Farmer operational constraint: {msg}"
+            return res
 
         # 4. Detect explicit preference
         # e.g., "I prefer lower-water crops", "I prefer organic fertilizers only"
-        if any(w in msg_lower for w in ["i prefer", "we prefer", "only want to grow", "prefer lower-water"]):
-            return self.memory_service.retain_memory(
+        if any(w in msg_lower for w in ["i prefer", "we prefer", "only want to grow", "prefer lower-water", "prefer low-water", "require less water"]):
+            extracted_facts = ["Crop & farming preference"]
+            if any(w in msg_lower for w in ["lower-water", "less water", "low-water"]):
+                extracted_facts.append("Prefers crops requiring less water")
+
+            res = self.memory_service.retain_memory(
                 farmer_id=farmer_id,
                 memory_type=MemoryType.PREFERENCE,
                 content=f"Farmer stated preference: {msg}",
                 metadata={"source": MemorySource.FARMER.value},
                 source=MemorySource.FARMER,
             )
+            if isinstance(res, dict):
+                res["extracted_facts"] = extracted_facts
+                res["memory_type"] = "preference"
+                res["summary"] = f"Farmer stated preference: {msg}"
+            return res
 
         return None
 

@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react'
-import { Mic, MicOff, Play, Pause, Loader, LogOut, User, Award, Users, Calendar, Brain } from 'lucide-react'
+import { Mic, MicOff, Play, Pause, Loader, LogOut, User, Award, Users, Calendar, Brain, Sparkles } from 'lucide-react'
 import axios from 'axios'
 import Auth from './Auth'
 import ProfileNew from './ProfileNew'
@@ -20,6 +20,7 @@ function App() {
   const [user, setUser] = useState(null)
   const [isRecording, setIsRecording] = useState(false)
   const [isProcessing, setIsProcessing] = useState(false)
+  const [processingStatusText, setProcessingStatusText] = useState('')
   const [response, setResponse] = useState('')
   const [error, setError] = useState('')
   const [audioUrl, setAudioUrl] = useState(null)
@@ -288,6 +289,8 @@ function App() {
     setIsProcessing(true)
     setError('')
     try {
+      setIsProcessing(true)
+      setProcessingStatusText("Finding relevant past experience...")
       const token = localStorage.getItem('token')
       const formData = new FormData()
       formData.set('file', audioBlob, 'recording.wav')
@@ -306,7 +309,8 @@ function App() {
         query_id: response.data.query_id,
         memory_context: response.data.memory_context,
         relevant_memories: response.data.relevant_memories,
-        memory_influence: response.data.memory_influence
+        memory_influence: response.data.memory_influence,
+        retained_learning: response.data.retained_learning
       })
       setCurrentQueryId(response.data.query_id)
       setTimeout(() => setShowFeedbackModal(true), 2000)
@@ -321,6 +325,7 @@ function App() {
       console.error('Error processing audio:', err)
     } finally {
       setIsProcessing(false)
+      setProcessingStatusText('')
     }
   }
 
@@ -330,9 +335,16 @@ function App() {
       return
     }
     setIsProcessing(true)
+    const hasConstraintOrFailure = /(?:failed|died|water|irrigation|borewell|prefer|tried)/i.test(textInput)
+    setProcessingStatusText(hasConstraintOrFailure ? "Remembering your experience..." : "Finding relevant past experience...")
     setError('')
     setResponse('')
     setAudioUrl(null)
+
+    const timer = setTimeout(() => {
+      setProcessingStatusText("Personalizing your recommendation...")
+    }, 1200)
+
     try {
       const token = localStorage.getItem('token')
       const response = await axios.post(`${API_URL}/process-text`, {
@@ -350,7 +362,8 @@ function App() {
         query_id: response.data.query_id,
         memory_context: response.data.memory_context,
         relevant_memories: response.data.relevant_memories,
-        memory_influence: response.data.memory_influence
+        memory_influence: response.data.memory_influence,
+        retained_learning: response.data.retained_learning
       })
       setCurrentQueryId(response.data.query_id)
       setTimeout(() => setShowFeedbackModal(true), 2000)
@@ -364,7 +377,9 @@ function App() {
       setError(errorMessage)
       console.error('Error processing text:', err)
     } finally {
+      clearTimeout(timer)
       setIsProcessing(false)
+      setProcessingStatusText('')
     }
   }
 
@@ -631,6 +646,37 @@ function App() {
       <Navbar user={user} activePage="home" onNavigate={handleNavigate} onLogout={handleLogout} language={uiLanguage} />
 
       <div className="main-card">
+        {/* Hackathon Judge Demo Quick-Access Banner */}
+        <div 
+          onClick={() => handleNavigate('memory')}
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            background: '#ecfdf5',
+            border: '1px solid #a7f3d0',
+            borderRadius: '12px',
+            padding: '10px 16px',
+            marginBottom: '18px',
+            cursor: 'pointer',
+            transition: 'all 0.2s ease'
+          }}
+          title="Click to launch the 2-Session Hindsight Learning Demo"
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+            <Sparkles size={16} color="#059669" />
+            <span style={{ fontSize: '0.88rem', fontWeight: 700, color: '#065f46' }}>
+              Hindsight Learning Demo:
+            </span>
+            <span style={{ fontSize: '0.84rem', color: '#047857' }}>
+              Watch past farm experience adapt future seasonal advice
+            </span>
+          </div>
+          <span style={{ fontSize: '0.82rem', fontWeight: 700, color: '#059669', whiteSpace: 'nowrap' }}>
+            Explore Demo →
+          </span>
+        </div>
+
         <div className="input-mode-selector">
           <button className={`mode-button ${inputMode === 'voice' ? 'active' : ''}`} onClick={() => setInputMode('voice')}>🎤 {t('voice')}</button>
           <button className={`mode-button ${inputMode === 'text' ? 'active' : ''}`} onClick={() => setInputMode('text')}>✍ {t('text')}</button>
@@ -643,7 +689,7 @@ function App() {
             </button>
             <div className="status-text">
               {isRecording ? `🎤 ${t('listening')}` :
-                isProcessing ? `🤖 ${t('processing')}` :
+                isProcessing ? `🤖 ${processingStatusText || t('processing')}` :
                   `👆 ${t('askQuestion')}`}
             </div>
             <div className="language-selector-inline">
@@ -666,7 +712,7 @@ function App() {
             <textarea value={textInput} onChange={(e) => setTextInput(e.target.value)} placeholder={t('typeMessage')} className="text-input" rows={3} disabled={isProcessing} />
             <div className="text-controls">
               <button className="submit-button" onClick={processText} disabled={isProcessing || !textInput.trim()}>
-                {isProcessing ? <><Loader className="loading" size={16} /> {t('processing')}</> : t('send')}
+                {isProcessing ? <><Loader className="loading" size={16} /> {processingStatusText || t('processing')}</> : t('send')}
               </button>
               <div className="language-selector-inline">
                 <div className="language-icon">🌐</div>
@@ -693,11 +739,12 @@ function App() {
             <h3>📝 {response.transcript}</h3>
             <p className="response-text">{response.response_text}</p>
             
-            {/* Phase 5: Memory Influence & Reasoning Card */}
+            {/* Phase 5 & 6: Memory Influence & Reasoning Card */}
             <MemoryInfluenceCard
               memoryContext={response.memory_context}
               relevantMemories={response.relevant_memories}
               memoryInfluence={response.memory_influence}
+              retainedLearning={response.retained_learning}
               onOpenCorrection={() => {
                 setFeedbackModalMode('correction')
                 setShowFeedbackModal(true)

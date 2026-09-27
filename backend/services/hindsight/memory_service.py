@@ -183,6 +183,11 @@ class FarmerMemoryService:
             confidence=model.confidence,
         )
 
+    def close(self):
+        """Release any client session resources."""
+        if self.client:
+            self.client.close()
+
     def recall_memories(
         self,
         farmer_id: str,
@@ -193,6 +198,7 @@ class FarmerMemoryService:
         """
         Recalls memories for a specific farmer.
         Enforces strict farmer isolation via mandatory farmer tag.
+        Handles single or multi-type taxonomy filtering correctly without tag collision.
         """
         validated_farmer_id = self._normalize_farmer_id(farmer_id)
         
@@ -200,32 +206,44 @@ class FarmerMemoryService:
             return []
 
         # Tag for isolation
-        query_tags = [f"farmer:{validated_farmer_id}"]
+        expected_tag = f"farmer:{validated_farmer_id}"
+        query_tags = [expected_tag]
+        tags_match = "any"
+        limit_to_send = limit
 
-        # If specific memory types are requested, filter by them
-        if memory_types:
-            for mt in memory_types:
-                vtype = self._normalize_memory_type(mt)
-                query_tags.append(f"type:{vtype.value}")
+        # If caller requested exactly 1 memory type, we can filter at the Hindsight tag level with "all"
+        if memory_types and len(memory_types) == 1:
+            vtype = self._normalize_memory_type(memory_types[0])
+            query_tags.append(f"type:{vtype.value}")
+            tags_match = "all"
+            limit_to_send = limit
+        elif memory_types and len(memory_types) > 1:
+            # When multiple types are requested, querying with all type tags and tags_match='all'
+            # causes Hindsight to return 0 because memories have only one type tag.
+            # We query by the mandatory farmer tag, request adequate candidate units,
+            # and perform taxonomy filtering in application code.
+            limit_to_send = max(limit * 3, 25)
 
         raw_results = self.client.recall(
             bank_id=self.config.bank_id,
             query=query.strip(),
             tags=query_tags,
-            limit=limit,
-            tags_match="all" if len(query_tags) > 1 else "any",
+            limit=limit_to_send,
+            tags_match=tags_match,
         )
 
-        # Secondary strict client-side isolation guard:
-        # Guarantee that no memory tagged for another farmer is ever returned
+        allowed_types: Optional[Set[str]] = None
+        if memory_types:
+            allowed_types = {self._normalize_memory_type(mt).value for mt in memory_types}
+
+        # Secondary strict client-side isolation guard and taxonomy filter:
         isolated_results: List[Dict[str, Any]] = []
-        expected_tag = f"farmer:{validated_farmer_id}"
 
         for item in raw_results:
             item_tags = item.get("tags") or []
             item_meta = item.get("metadata") or {}
 
-            # Check tag or metadata
+            # Check tag or metadata for farmer isolation
             meta_fid = item_meta.get("farmer_id")
             has_tag = expected_tag in item_tags
             
@@ -242,7 +260,22 @@ class FarmerMemoryService:
                 if other_farmer_tags and expected_tag not in other_farmer_tags:
                     continue
 
+            # Determine taxonomy type from metadata or tags
+            mem_type = item_meta.get("memory_type")
+            if not mem_type:
+                for t in item_tags:
+                    if t.startswith("type:"):
+                        mem_type = t.split(":", 1)[1]
+                        break
+            mem_type = (mem_type or item.get("type") or "profile").lower()
+
+            # Filter by requested taxonomy types if specified
+            if allowed_types and mem_type not in allowed_types:
+                continue
+
             isolated_results.append(item)
+            if len(isolated_results) >= limit:
+                break
 
         return isolated_results
 
@@ -250,43 +283,30 @@ class FarmerMemoryService:
         """
         Retrieves a structured overview of durable knowledge stored for a farmer
         organized into 4 human-friendly sections: Profile, Preferences, Past Experience, Learned From You.
+        Optimized to use ONE single farmer-scoped recall request to conserve credits.
         """
         validated_farmer_id = self._normalize_farmer_id(farmer_id)
         
-        # 1. Profile
-        profile_facts = self.recall_memories(
+        # Single credit-conscious recall query covering the farmer's full memory profile
+        all_memories = self.recall_memories(
             farmer_id=validated_farmer_id,
-            query="farm size soil type location language profile acreage",
-            memory_types=[MemoryType.PROFILE],
-            limit=6,
-        )
-        # 2. Preferences
-        preferences = self.recall_memories(
-            farmer_id=validated_farmer_id,
-            query="preference preferred crops organic fertilizer method low water budget",
-            memory_types=[MemoryType.PREFERENCE],
-            limit=6,
-        )
-        # 3. Past Experience (Crop history & incidents)
-        crop_history = self.recall_memories(
-            farmer_id=validated_farmer_id,
-            query="crop history past seasons harvest failed success yield pest incident",
-            memory_types=[MemoryType.CROP_HISTORY, MemoryType.INCIDENT],
-            limit=8,
-        )
-        # 4. Learned From You (Constraints, corrections, outcomes)
-        learned = self.recall_memories(
-            farmer_id=validated_farmer_id,
-            query="constraint correction outcome water limitation rejected recommendation",
-            memory_types=[MemoryType.CONSTRAINT, MemoryType.CORRECTION, MemoryType.OUTCOME],
-            limit=8,
+            query="farm size soil type location language profile preferences constraints water irrigation crop history past seasons harvest failure success yield pest incident corrections outcomes",
+            memory_types=None,  # All types permitted for this farmer
+            limit=30,
         )
 
         def humanize(items, default_type="general"):
             cleaned = []
             for it in items:
                 m = it.get("metadata") or {}
-                t = m.get("memory_type") or it.get("type", default_type)
+                tags = it.get("tags") or []
+                t = m.get("memory_type")
+                if not t:
+                    for tag in tags:
+                        if tag.startswith("type:"):
+                            t = tag.split(":", 1)[1]
+                            break
+                t = t or it.get("type") or default_type
                 cleaned.append({
                     "id": it.get("id"),
                     "text": it.get("text", "").strip(),
@@ -299,10 +319,37 @@ class FarmerMemoryService:
                 })
             return cleaned
 
-        profile_clean = humanize(profile_facts, "profile")
-        pref_clean = humanize(preferences, "preference")
-        exp_clean = humanize(crop_history, "crop_history")
-        learned_clean = humanize(learned, "learned")
+        profile_raw = []
+        preferences_raw = []
+        crop_history_raw = []
+        learned_raw = []
+
+        for item in all_memories:
+            m = item.get("metadata") or {}
+            tags = item.get("tags") or []
+            m_type = m.get("memory_type")
+            if not m_type:
+                for t in tags:
+                    if t.startswith("type:"):
+                        m_type = t.split(":", 1)[1]
+                        break
+            m_type = (m_type or item.get("type") or "profile").lower()
+
+            if m_type == MemoryType.PROFILE.value:
+                profile_raw.append(item)
+            elif m_type == MemoryType.PREFERENCE.value:
+                preferences_raw.append(item)
+            elif m_type in [MemoryType.CROP_HISTORY.value, MemoryType.INCIDENT.value]:
+                crop_history_raw.append(item)
+            elif m_type in [MemoryType.CONSTRAINT.value, MemoryType.CORRECTION.value, MemoryType.OUTCOME.value]:
+                learned_raw.append(item)
+            else:
+                profile_raw.append(item)
+
+        profile_clean = humanize(profile_raw, "profile")
+        pref_clean = humanize(preferences_raw, "preference")
+        exp_clean = humanize(crop_history_raw, "crop_history")
+        learned_clean = humanize(learned_raw, "learned")
 
         # Derive "What Changed?" evolution insights from farmer learning
         what_changed = []
@@ -350,6 +397,52 @@ class FarmerMemoryService:
             "constraint_memories": [m for m in learned_clean if m["type"] == "constraint"],
             "preference_memories": pref_clean,
         }
+
+    def reset_demo_farmer_memories(self, farmer_id: str) -> Dict[str, Any]:
+        """
+        Safely clears memories for ONLY designated demo farmer accounts.
+        Strictly prevents clearing real farmers' memories.
+        """
+        validated_farmer_id = self._normalize_farmer_id(farmer_id)
+        allowed_demo_ids = {"+919999999001", "demo_farmer", "test_farmer_001"}
+        if validated_farmer_id not in allowed_demo_ids:
+            raise PermissionError(f"Reset is strictly forbidden for non-demo farmer ID: {validated_farmer_id}")
+
+        if not self.client.is_available:
+            return {"success": True, "deleted_count": 0, "farmer_id": validated_farmer_id, "mock": True}
+
+        deleted_count = 0
+        try:
+            import asyncio
+            raw_client = getattr(self.client, "_raw_client", None)
+            if raw_client and hasattr(raw_client, "list_memories"):
+                mems = raw_client.list_memories(bank_id=self.config.bank_id, limit=100)
+                expected_tag = f"farmer:{validated_farmer_id}"
+                doc_ids = set()
+                for m in getattr(mems, "items", []):
+                    tags = getattr(m, "tags", []) or []
+                    doc_id = getattr(m, "document_id", None)
+                    if expected_tag in tags and doc_id:
+                        doc_ids.add(doc_id)
+
+                for doc_id in doc_ids:
+                    try:
+                        coro = raw_client.documents.delete_document(bank_id=self.config.bank_id, document_id=doc_id)
+                        asyncio.run(coro)
+                        deleted_count += 1
+                    except Exception as del_err:
+                        logger.warning(f"Error deleting demo document {doc_id}: {del_err}")
+
+        except Exception as e:
+            logger.error(f"Error resetting demo farmer memories: {e}")
+
+        return {
+            "success": True,
+            "farmer_id": validated_farmer_id,
+            "deleted_documents": deleted_count,
+            "message": f"Successfully reset demo memories for {validated_farmer_id}"
+        }
+
 
 
 # Global service instance cache
