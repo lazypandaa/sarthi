@@ -1260,6 +1260,8 @@ async def get_hyperlocal_context(current_user: dict = Depends(get_current_user))
         ctx = agri.get_hyperlocal_context(location)
         return {
             "has_data": True,
+            "district": ctx["district"],
+            "state": ctx["state"],
             "location": f"{ctx['district']}, {ctx['state']}",
             "soil_type": ctx["soil_type"],
             "rainfall": ctx["rainfall"],
