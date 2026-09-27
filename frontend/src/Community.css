@@ -972,7 +972,6 @@
 
 @media (max-width: 768px) {
   .community-container {
-    overflow-x: hidden;
     width: 100%;
   }
 
@@ -980,7 +979,6 @@
     padding: 20px 12px 100px;
     width: 100%;
     box-sizing: border-box;
-    overflow-x: hidden;
   }
 
   .community-header h1 {
