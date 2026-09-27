@@ -31,11 +31,15 @@ from services.hindsight import (
     MemoryType,
     MemorySource,
 )
+from services.azure_table_db import get_azure_table_db
 
 load_dotenv()
 
-# Amazon Translate client
-translate_client = boto3.client('translate', region_name='ap-south-1')
+# Amazon Translate client (optional fallback)
+try:
+    translate_client = boto3.client('translate', region_name='ap-south-1')
+except Exception:
+    translate_client = None
 
 # MongoDB connection for hyperlocal data (with connection pooling)
 mongo_client = MongoClient(
@@ -52,15 +56,15 @@ pest_outbreaks_collection = mongo_db.pest_outbreaks
 
 app = FastAPI()
 
-# DynamoDB connection
-dynamodb = boto3.resource('dynamodb', region_name='ap-south-1')
-users_table = dynamodb.Table('gramvaani_users')
-queries_table = dynamodb.Table('gramvaani_user_querie')
-sessions_table = dynamodb.Table('gramvaani_sessions')
-village_trust_table = dynamodb.Table('gramvaani_village_trust')
-community_reports_table = dynamodb.Table('gramvaani_community_reports')
+# Azure Table Storage connection (Replaces AWS DynamoDB)
+azure_db = get_azure_table_db()
+users_table = azure_db.Table('sarthiusers')
+queries_table = azure_db.Table('sarthiqueries')
+sessions_table = azure_db.Table('sarthisessions')
+village_trust_table = azure_db.Table('sarthivillagetrust')
+community_reports_table = azure_db.Table('sarthicommunityreports')
 
-print("DynamoDB connection initialized")
+print("Azure Table Storage initialized (sarthistore)")
 
 # Security
 security = HTTPBearer()
@@ -338,13 +342,13 @@ async def shutdown_event():
 # Routes
 @app.get("/")
 async def root():
-    return {"message": "Sarthi API with DynamoDB is running"}
+    return {"message": "Sarthi API with Azure Table Storage is running"}
 
 @app.get("/health")
 async def health():
     try:
         users_table.table_status
-        return {"status": "healthy", "database": "connected"}
+        return {"status": "healthy", "database": "connected (Azure Table Storage)"}
     except Exception as e:
         return {"status": "unhealthy", "database": "disconnected", "error": str(e)}
 

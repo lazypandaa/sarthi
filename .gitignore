@@ -57,6 +57,9 @@ logs/
 *.tmp
 *.temp
 test_audio.wav
+*.db
+backend/data/
+data/*.db
 
 # Virtual environments
 venv/
