@@ -4,9 +4,11 @@ import type { UserProfile } from "../api/types";
 
 interface AuthScreenProps {
   onSuccess: (user: UserProfile) => void;
+  onBackToLanding?: () => void;
+  initialDemo?: boolean;
 }
 
-export function AuthScreen({ onSuccess }: AuthScreenProps) {
+export function AuthScreen({ onSuccess, onBackToLanding, initialDemo = false }: AuthScreenProps) {
   const [isLogin, setIsLogin] = useState(true);
   const [phone, setPhone] = useState("+919999999001");
   const [password, setPassword] = useState("demoPassword123!");
@@ -96,6 +98,19 @@ export function AuthScreen({ onSuccess }: AuthScreenProps) {
   return (
     <div className="auth-wrapper">
       <div className="auth-card-box">
+        {onBackToLanding && (
+          <button
+            type="button"
+            className="auth-back-to-landing"
+            onClick={onBackToLanding}
+          >
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+              <path d="M19 12H5M12 19l-7-7 7-7" />
+            </svg>
+            <span>Back to Overview</span>
+          </button>
+        )}
+
         {/* Brand Header */}
         <div className="auth-brand">
           <div className="auth-logo-badge">

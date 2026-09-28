@@ -16,6 +16,7 @@ import type {
   QueryHistoryItem,
 } from "./api/types";
 import { AuthScreen } from "./components/AuthScreen";
+import { LandingPage } from "./components/LandingPage";
 import { MarkdownRenderer } from "./components/MarkdownRenderer";
 
 type Page =
@@ -377,6 +378,7 @@ const navItems: [Page, IconName, string][] = [
 
 export default function App() {
   const [user, setUser] = useState<UserProfile | null>(null);
+  const [showLogin, setShowLogin] = useState<boolean>(false);
   const [authChecking, setAuthChecking] = useState<boolean>(true);
   const [page, setPage] = useState<Page>("home");
   const [history, setHistory] = useState<Page[]>([]);
@@ -470,6 +472,7 @@ export default function App() {
 
     const handleLogout = () => {
       setUser(null);
+      setShowLogin(false);
       showToast("Signed out successfully.");
     };
 
@@ -673,10 +676,22 @@ export default function App() {
   }
 
   if (!user) {
+    if (!showLogin) {
+      return (
+        <LandingPage
+          onGetStarted={() => setShowLogin(true)}
+          onLogin={() => setShowLogin(true)}
+          onTryDemo={() => setShowLogin(true)}
+        />
+      );
+    }
+
     return (
       <AuthScreen
+        onBackToLanding={() => setShowLogin(false)}
         onSuccess={(loggedUser) => {
           setUser(loggedUser);
+          setShowLogin(false);
           setEditLocation(loggedUser.location || "");
           setEditLanguage(loggedUser.language || "hi");
           showToast(`Welcome back, farmer ${loggedUser.phone_number}!`);
