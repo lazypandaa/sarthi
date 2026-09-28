@@ -70,5 +70,6 @@ venv/
 # MD5 fingerprint cache
 *.md5
 
-# Android APKs
-*.apk
+# Android APK build artifacts
+android/app/build/
+!Sarthi-*.apk

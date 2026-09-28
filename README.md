@@ -30,7 +30,7 @@
   </tr>
 </table>
 
-> 🌐 **Live Demo**: [https://calm-plant-0ae45df00.2.azurestaticapps.net](https://calm-plant-0ae45df00.2.azurestaticapps.net) &nbsp;|&nbsp; ⚙️ **API**: [https://sarthi-api.azurewebsites.net/docs](https://sarthi-api.azurewebsites.net/docs) &nbsp;|&nbsp; 📦 **Android APK**: [Download Sarthi-v1.0.apk](https://github.com/lazypandaa/sarthi/releases)
+> 🌐 **Live Demo**: [https://calm-plant-0ae45df00.2.azurestaticapps.net](https://calm-plant-0ae45df00.2.azurestaticapps.net) &nbsp;|&nbsp; ⚙️ **API**: [https://sarthi-api.azurewebsites.net/docs](https://sarthi-api.azurewebsites.net/docs) &nbsp;|&nbsp; 📦 **Android APK**: [Download Sarthi-v1.4.apk (Direct Download)](https://github.com/lazypandaa/sarthi/raw/main/Sarthi-v1.4.apk)
 
 ---
 
