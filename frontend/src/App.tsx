@@ -16,6 +16,7 @@ import type {
   QueryHistoryItem,
 } from "./api/types";
 import { AuthScreen } from "./components/AuthScreen";
+import { MarkdownRenderer } from "./components/MarkdownRenderer";
 
 type Page =
   | "home"
@@ -1920,9 +1921,7 @@ function AIScreen({
               )}
             </div>
 
-            <div style={{ fontSize: 12, lineHeight: 1.6, color: "var(--text)", whiteSpace: "pre-line" }}>
-              {recResponse.recommendation}
-            </div>
+            <MarkdownRenderer text={recResponse.recommendation} fontSize={12} />
 
             {/* Relevant memories cited */}
             {recResponse.relevant_memories && recResponse.relevant_memories.length > 0 && (
@@ -2040,15 +2039,20 @@ function AIScreen({
             {comparisonMode ? "SARTHI WITH HINDSIGHT MEMORY" : "STANDARD LLM (WITHOUT MEMORY)"}
           </span>
           <b>{comparisonMode ? `${selectedCrop} (Personalized)` : "Standard Recommendation"}</b>
-          <p style={{ whiteSpace: "pre-line" }}>
-            {comparing
-              ? "Running comparative analysis..."
-              : comparisonMode
-              ? compareData?.personalized ||
-                "Sarthi retrieved your past memory: 'Limited irrigation availability & previous tomato failure'. It filters high-risk water-intensive crops."
-              : compareData?.generic ||
-                "Generic regional model recommends standard crops without awareness of your individual borehole drying constraint or prior crop loss."}
-          </p>
+          {comparing ? (
+            <p style={{ color: "var(--muted)", fontSize: 12 }}>Running comparative analysis...</p>
+          ) : (
+            <MarkdownRenderer
+              text={
+                comparisonMode
+                  ? compareData?.personalized ||
+                    "Sarthi retrieved your past memory: 'Limited irrigation availability & previous tomato failure'. It filters high-risk water-intensive crops."
+                  : compareData?.generic ||
+                    "Generic regional model recommends standard crops without awareness of your individual borehole drying constraint or prior crop loss."
+              }
+              fontSize={12}
+            />
+          )}
 
           {comparisonMode && compareData?.differences && compareData.differences.length > 0 && (
             <div style={{ marginTop: 10, paddingTop: 8, borderTop: "1px dashed rgba(9,107,71,0.2)" }}>
@@ -2164,6 +2168,68 @@ function CommunityScreen({
       <div className="screen-intro">
         <div className="screen-heading">Village Outbreak Radar</div>
         <p>Real-time farmer pest reports, geographic outbreak clusters, and trust index.</p>
+      </div>
+
+      {/* Interactive Outbreak Map */}
+      <SectionTitle title="Live Outbreak Map" />
+      <div style={{
+        borderRadius: 18,
+        overflow: "hidden",
+        border: "1.5px solid var(--line)",
+        marginBottom: 16,
+        position: "relative",
+        background: "var(--surface)",
+        boxShadow: "0 2px 12px rgba(9,107,71,0.07)",
+      }}>
+        <iframe
+          title="Sarthi Outbreak Map"
+          src="https://www.openstreetmap.org/export/embed.html?bbox=72.0%2C15.0%2C85.0%2C28.0&amp;layer=mapnik&amp;marker=20.5937%2C78.9629"
+          style={{
+            width: "100%",
+            height: 300,
+            border: 0,
+            display: "block",
+          }}
+          loading="lazy"
+          allowFullScreen
+        />
+        <div style={{
+          position: "absolute",
+          top: 10,
+          left: 10,
+          background: "rgba(255,255,255,0.92)",
+          backdropFilter: "blur(8px)",
+          borderRadius: 10,
+          padding: "6px 10px",
+          boxShadow: "0 2px 8px rgba(0,0,0,0.12)",
+          fontSize: 10,
+          fontWeight: 700,
+          color: "var(--green-dark)",
+          display: "flex",
+          alignItems: "center",
+          gap: 5,
+        }}>
+          <span style={{ width: 8, height: 8, borderRadius: "50%", background: "#c94f4f", display: "inline-block", boxShadow: "0 0 0 3px rgba(201,79,79,0.25)" }} />
+          {outbreakMap?.outbreaks?.length ?? 0} Active Outbreak Clusters
+        </div>
+        <a
+          href="https://www.openstreetmap.org/#map=5/20.59/78.96"
+          target="_blank"
+          rel="noopener noreferrer"
+          style={{
+            position: "absolute",
+            bottom: 8,
+            right: 8,
+            background: "rgba(255,255,255,0.88)",
+            borderRadius: 6,
+            padding: "3px 7px",
+            fontSize: 9,
+            color: "var(--muted)",
+            textDecoration: "none",
+          }}
+        >
+          View larger map ↗
+        </a>
       </div>
 
       {/* Outbreak Clusters from Outbreak Map API */}
@@ -3219,9 +3285,9 @@ function VoiceScreen({
                 </button>
               )}
             </div>
-            <p style={{ fontWeight: 600, margin: "8px 0 0", whiteSpace: "pre-line", fontSize: 12 }}>
-              {voiceResp}
-            </p>
+            <div style={{ marginTop: 8 }}>
+              <MarkdownRenderer text={voiceResp} fontSize={12} />
+            </div>
 
             {/* Inline feedback */}
             <div
