@@ -2616,6 +2616,27 @@ function CalendarScreen({
   const crops = cropCalendar?.recommended_crops || [];
   const activeCrop = crops[selectedCropIndex] || null;
 
+  // Curated free-use crop photos (Unsplash source – no API key needed)
+  const cropImages: Record<string, string> = {
+    "Chilli":            "https://images.unsplash.com/photo-1588168333986-5078d3ae3976?w=600&q=80&fit=crop",
+    "Cotton":            "https://images.unsplash.com/photo-1605000797499-95a51c5269ae?w=600&q=80&fit=crop",
+    "Groundnut":         "https://images.unsplash.com/photo-1567356738706-4ca9f5929cba?w=600&q=80&fit=crop",
+    "Paddy (Rice - Kharif)": "https://images.unsplash.com/photo-1536304993881-ff6e9eefa2a6?w=600&q=80&fit=crop",
+    "Paddy":             "https://images.unsplash.com/photo-1536304993881-ff6e9eefa2a6?w=600&q=80&fit=crop",
+    "Rice":              "https://images.unsplash.com/photo-1536304993881-ff6e9eefa2a6?w=600&q=80&fit=crop",
+    "Soybean":           "https://images.unsplash.com/photo-1618160702438-9b02ab6515c9?w=600&q=80&fit=crop",
+    "Sugarcane":         "https://images.unsplash.com/photo-1509440159596-0249088772ff?w=600&q=80&fit=crop",
+    "Black Gram (Urad)": "https://images.unsplash.com/photo-1612257416648-3c3e3c1a8b35?w=600&q=80&fit=crop",
+    "Wheat":             "https://images.unsplash.com/photo-1574323347407-f5e1ad6d020b?w=600&q=80&fit=crop",
+  };
+
+  const getCropImage = (name: string) => {
+    // Try exact match first, then partial match
+    if (cropImages[name]) return cropImages[name];
+    const key = Object.keys(cropImages).find((k) => name.toLowerCase().includes(k.toLowerCase()));
+    return key ? cropImages[key] : `https://images.unsplash.com/photo-1500937386664-56d1dfef3854?w=600&q=80&fit=crop`;
+  };
+
   const toggleOp = (key: string) => {
     setCompletedOps((prev) => {
       const next = !prev[key];
@@ -2649,24 +2670,66 @@ function CalendarScreen({
 
       {activeCrop && (
         <>
-          <Card style={{ padding: "14px 16px", marginBottom: 16 }}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-              <b style={{ fontSize: 15 }}>{activeCrop.name}</b>
-              <Badge tone="green">{activeCrop.duration_days} Days Total</Badge>
-            </div>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginTop: 10, fontSize: 11 }}>
-              <div>
-                <span style={{ color: "var(--muted)", display: "block" }}>PLANTING WINDOW:</span>
-                <b>{activeCrop.planting.start} – {activeCrop.planting.end}</b>
+          <Card style={{ padding: 0, overflow: "hidden", marginBottom: 16 }}>
+            {/* Crop Photo Hero */}
+            <div style={{ position: "relative", height: 160, overflow: "hidden" }}>
+              <img
+                src={getCropImage(activeCrop.name)}
+                alt={activeCrop.name}
+                style={{
+                  width: "100%",
+                  height: "100%",
+                  objectFit: "cover",
+                  display: "block",
+                }}
+                onError={(e) => {
+                  (e.target as HTMLImageElement).src =
+                    "https://images.unsplash.com/photo-1500937386664-56d1dfef3854?w=600&q=80&fit=crop";
+                }}
+              />
+              {/* Gradient overlay with crop name */}
+              <div style={{
+                position: "absolute",
+                inset: 0,
+                background: "linear-gradient(to top, rgba(7,82,56,0.82) 0%, transparent 55%)",
+                display: "flex",
+                alignItems: "flex-end",
+                padding: "12px 16px",
+              }}>
+                <div>
+                  <div style={{ fontSize: 20, fontWeight: 800, color: "#fff", lineHeight: 1.2 }}>
+                    {activeCrop.name}
+                  </div>
+                  <div style={{ fontSize: 10, color: "rgba(255,255,255,0.8)", fontWeight: 600, marginTop: 2 }}>
+                    {activeCrop.duration_days} Days · {cropCalendar?.current_season?.toUpperCase() || "KHARIF"} Season
+                  </div>
+                </div>
               </div>
-              <div>
-                <span style={{ color: "var(--muted)", display: "block" }}>HARVEST WINDOW:</span>
-                <b>{activeCrop.harvesting.start} – {activeCrop.harvesting.end}</b>
+              <div style={{
+                position: "absolute",
+                top: 10,
+                right: 10,
+              }}>
+                <Badge tone="green">{activeCrop.duration_days} Days</Badge>
               </div>
             </div>
-            <p style={{ marginTop: 10, fontSize: 11, color: "var(--text)", lineHeight: 1.5 }}>
-              <b>Agronomic Tip:</b> {activeCrop.tips}
-            </p>
+
+            {/* Planting & Harvest info below photo */}
+            <div style={{ padding: "12px 16px" }}>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, fontSize: 11 }}>
+                <div>
+                  <span style={{ color: "var(--muted)", display: "block", fontSize: 9, fontWeight: 700, letterSpacing: 0.5 }}>PLANTING WINDOW</span>
+                  <b>{activeCrop.planting.start} – {activeCrop.planting.end}</b>
+                </div>
+                <div>
+                  <span style={{ color: "var(--muted)", display: "block", fontSize: 9, fontWeight: 700, letterSpacing: 0.5 }}>HARVEST WINDOW</span>
+                  <b>{activeCrop.harvesting.start} – {activeCrop.harvesting.end}</b>
+                </div>
+              </div>
+              <p style={{ marginTop: 10, fontSize: 11, color: "var(--text)", lineHeight: 1.5 }}>
+                <b>Agronomic Tip:</b> {activeCrop.tips}
+              </p>
+            </div>
           </Card>
 
           <SectionTitle title="Critical Field Operations Checklist" />
