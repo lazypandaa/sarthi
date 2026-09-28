@@ -196,8 +196,9 @@ Sarthi enforces a strict separation between **Authoritative Agricultural Ground 
 | `GET` | `/api/memory/summary` | Fetch categorized memories, evolution timeline, and stats |
 | `POST` | `/api/memory/retain` | Store a durable farmer constraint or preference |
 | `POST` | `/api/memory/recall` | Retrieve semantic memories relevant to a query |
-| `DELETE`| `/api/memory/{memory_id}`| Farmer-driven memory deletion |
-| `POST` | `/api/recommendations/feedback` | Submit thumbs up/down, harvest outcome, or correction |
+| `POST` | `/api/memory/compare`| Live comparison of recommendation without memory vs. with memory |
+| `POST` | `/api/memory/demo/reset` | Reset memory bank for designated demo farmer accounts |
+| `POST` | `/api/feedback` | Submit thumbs up/down, harvest outcome, or authoritative correction |
 
 ### Core Agricultural & Intelligence Endpoints
 | Method | Endpoint | Latency | Description |
@@ -210,10 +211,27 @@ Sarthi enforces a strict separation between **Authoritative Agricultural Ground 
 | `GET` | `/api/markets` | **< 10ms** | Authoritative Agmarknet APMC mandi prices with min, max, modal rates, and daily arrivals |
 | `GET` | `/api/outbreak-map` | **< 15ms** | Geospatial village clustering of pest and disease outbreaks with alert severity |
 | `GET` | `/api/community-reports`| **< 15ms** | Peer-verified farmer pest observations and farming reports |
-| `POST`| `/api/recommendation` | ~1.2s | Full hybrid reasoning combining authoritative agri ground truth with Hindsight farmer memory |
-| `POST`| `/api/voice-chat` | ~1.5s | Voice audio input → Azure Speech STT → hybrid reasoning → regional TTS audio |
+| `POST`| `/api/recommendation` | ~1.2s | Direct hybrid reasoning combining authoritative agri ground truth with Hindsight farmer memory |
+| `POST`| `/process-text` | ~1.1s | Text input → conversational learning detection → memory recall → hybrid reasoning |
+| `POST`| `/process-audio` | ~1.5s | Voice audio input → Azure Speech STT → conversational learning → hybrid reasoning → TTS audio |
 
 ---
+
+## 📚 Technical Documentation & Article Preparation
+
+- **System Architecture**: Inspect [`docs/architecture.md`](docs/architecture.md) for full-stack data flow and cloud service topology.
+- **Hindsight Long-Term Memory**: Read [`docs/hindsight-memory.md`](docs/hindsight-memory.md) for taxonomy, precedence rules, tenant isolation, and test validation.
+- **Development & Testing Guide**: Refer to [`docs/development.md`](docs/development.md) for environment setup and test execution.
+- **Technical Article Evidence**: See [`docs/article-evidence.md`](docs/article-evidence.md) for verified facts, before/after examples, engineering lessons, and debugging stories.
+- **Article Screenshot Plan**: See [`docs/article-screenshot-plan.md`](docs/article-screenshot-plan.md) for visual evidence layout.
+- **Article Code Snippets**: See [`docs/article-code-snippets.md`](docs/article-code-snippets.md) for small, verified code excerpts.
+
+### Official Hindsight & Vectorize Resources
+- [Hindsight GitHub repository](https://github.com/vectorize-io/hindsight)
+- [Hindsight documentation](https://hindsight.vectorize.io/)
+- [Vectorize's explanation of agent memory](https://vectorize.io/what-is-agent-memory)
+
+> **Publishing note**: When publishing the article and LinkedIn post, tag Code.in as required by the submission guide.
 
 ## 🚀 Getting Started
 
