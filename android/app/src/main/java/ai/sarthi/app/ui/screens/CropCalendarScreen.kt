@@ -53,24 +53,30 @@ import ai.sarthi.app.ui.theme.SarthiMuted
 import ai.sarthi.app.ui.theme.SarthiSurface
 import ai.sarthi.app.ui.theme.SarthiText
 
-// Curated free-use crop photos (Unsplash – no API key needed)
+import ai.sarthi.app.R
+
+// Curated authentic crop photos (bundled high-res drawables with remote fallbacks)
+private val cropDrawables = mapOf(
+    "Chilli"    to R.drawable.crop_chilli,
+    "Soybean"   to R.drawable.crop_soybean,
+    "Sugarcane" to R.drawable.crop_sugarcane,
+    "Cotton"    to R.drawable.crop_cotton,
+    "Groundnut" to R.drawable.crop_groundnut,
+)
+
 private val cropImageUrls = mapOf(
-    "Chilli"                  to "https://images.unsplash.com/photo-1588168333986-5078d3ae3976?w=600&q=80&fit=crop",
-    "Cotton"                  to "https://images.unsplash.com/photo-1605000797499-95a51c5269ae?w=600&q=80&fit=crop",
-    "Groundnut"               to "https://images.unsplash.com/photo-1567356738706-4ca9f5929cba?w=600&q=80&fit=crop",
     "Paddy (Rice - Kharif)"   to "https://images.unsplash.com/photo-1536304993881-ff6e9eefa2a6?w=600&q=80&fit=crop",
     "Paddy"                   to "https://images.unsplash.com/photo-1536304993881-ff6e9eefa2a6?w=600&q=80&fit=crop",
     "Rice"                    to "https://images.unsplash.com/photo-1536304993881-ff6e9eefa2a6?w=600&q=80&fit=crop",
-    "Soybean"                 to "https://images.unsplash.com/photo-1618160702438-9b02ab6515c9?w=600&q=80&fit=crop",
-    "Sugarcane"               to "https://images.unsplash.com/photo-1509440159596-0249088772ff?w=600&q=80&fit=crop",
-    "Black Gram (Urad)"       to "https://images.unsplash.com/photo-1612257416648-3c3e3c1a8b35?w=600&q=80&fit=crop",
+    "Black Gram (Urad)"       to "https://images.unsplash.com/photo-1586201375761-83865001e31c?w=600&q=80&fit=crop",
     "Wheat"                   to "https://images.unsplash.com/photo-1574323347407-f5e1ad6d020b?w=600&q=80&fit=crop",
 )
 private const val DEFAULT_CROP_IMAGE = "https://images.unsplash.com/photo-1500937386664-56d1dfef3854?w=600&q=80&fit=crop"
 
-private fun getCropImageUrl(name: String): String {
+private fun getCropImageModel(name: String): Any {
+    cropDrawables[name]?.let { return it }
+    cropDrawables.entries.firstOrNull { name.contains(it.key, ignoreCase = true) }?.let { return it.value }
     cropImageUrls[name]?.let { return it }
-    // Partial match
     cropImageUrls.entries.firstOrNull { name.contains(it.key, ignoreCase = true) }?.let { return it.value }
     return DEFAULT_CROP_IMAGE
 }
@@ -237,7 +243,7 @@ fun CropCalendarScreen(
                 ) {
                     // Crop photo
                     AsyncImage(
-                        model = getCropImageUrl(selectedCrop.name),
+                        model = getCropImageModel(selectedCrop.name),
                         contentDescription = selectedCrop.name,
                         contentScale = ContentScale.Crop,
                         modifier = Modifier.fillMaxSize()

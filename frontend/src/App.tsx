@@ -1380,12 +1380,14 @@ function AdviceScreen({
               const nameLower = c.crop_name.toLowerCase();
               let cropThumb = "https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=300&h=200&fit=crop";
               if (nameLower.includes("wheat")) cropThumb = "https://images.unsplash.com/photo-1574323347407-f5e1ad6d020b?w=300&h=200&fit=crop";
-              else if (nameLower.includes("chilli") || nameLower.includes("pepper")) cropThumb = "https://images.unsplash.com/photo-1592982537447-7440770cbfc9?w=300&h=200&fit=crop";
+              else if (nameLower.includes("chilli") || nameLower.includes("pepper")) cropThumb = "/assets/crops/chilli.jpg";
               else if (nameLower.includes("paddy") || nameLower.includes("rice")) cropThumb = "https://images.unsplash.com/photo-1560493676-04071c5f467b?w=300&h=200&fit=crop";
-              else if (nameLower.includes("soybean")) cropThumb = "https://images.unsplash.com/photo-1595974482597-4b8da8879bc5?w=300&h=200&fit=crop";
+              else if (nameLower.includes("soybean")) cropThumb = "/assets/crops/soybean.jpg";
+              else if (nameLower.includes("sugarcane")) cropThumb = "/assets/crops/sugarcane.jpg";
+              else if (nameLower.includes("cotton")) cropThumb = "/assets/crops/cotton.jpg";
+              else if (nameLower.includes("groundnut") || nameLower.includes("peanut")) cropThumb = "/assets/crops/groundnut.jpg";
               else if (nameLower.includes("chickpea") || nameLower.includes("gram")) cropThumb = "https://images.unsplash.com/photo-1515543237350-b3eea1ec8082?w=300&h=200&fit=crop";
               else if (nameLower.includes("onion")) cropThumb = "https://images.unsplash.com/photo-1574943320219-553eb213f72d?w=300&h=200&fit=crop";
-              else if (nameLower.includes("cotton")) cropThumb = "https://images.unsplash.com/photo-1606041008023-472dfb5e530f?w=300&h=200&fit=crop";
               else if (nameLower.includes("mustard")) cropThumb = "https://images.unsplash.com/photo-1508615039623-a25605d2b022?w=300&h=200&fit=crop";
 
               return (
@@ -2616,17 +2618,17 @@ function CalendarScreen({
   const crops = cropCalendar?.recommended_crops || [];
   const activeCrop = crops[selectedCropIndex] || null;
 
-  // Curated free-use crop photos (Unsplash source – no API key needed)
+  // Curated authentic crop photos (local high-res assets with remote fallbacks)
   const cropImages: Record<string, string> = {
-    "Chilli":            "https://images.unsplash.com/photo-1588168333986-5078d3ae3976?w=600&q=80&fit=crop",
-    "Cotton":            "https://images.unsplash.com/photo-1605000797499-95a51c5269ae?w=600&q=80&fit=crop",
-    "Groundnut":         "https://images.unsplash.com/photo-1567356738706-4ca9f5929cba?w=600&q=80&fit=crop",
+    "Chilli":            "/assets/crops/chilli.jpg",
+    "Cotton":            "/assets/crops/cotton.jpg",
+    "Groundnut":         "/assets/crops/groundnut.jpg",
     "Paddy (Rice - Kharif)": "https://images.unsplash.com/photo-1536304993881-ff6e9eefa2a6?w=600&q=80&fit=crop",
     "Paddy":             "https://images.unsplash.com/photo-1536304993881-ff6e9eefa2a6?w=600&q=80&fit=crop",
     "Rice":              "https://images.unsplash.com/photo-1536304993881-ff6e9eefa2a6?w=600&q=80&fit=crop",
-    "Soybean":           "https://images.unsplash.com/photo-1618160702438-9b02ab6515c9?w=600&q=80&fit=crop",
-    "Sugarcane":         "https://images.unsplash.com/photo-1509440159596-0249088772ff?w=600&q=80&fit=crop",
-    "Black Gram (Urad)": "https://images.unsplash.com/photo-1612257416648-3c3e3c1a8b35?w=600&q=80&fit=crop",
+    "Soybean":           "/assets/crops/soybean.jpg",
+    "Sugarcane":         "/assets/crops/sugarcane.jpg",
+    "Black Gram (Urad)": "https://images.unsplash.com/photo-1586201375761-83865001e31c?w=600&q=80&fit=crop",
     "Wheat":             "https://images.unsplash.com/photo-1574323347407-f5e1ad6d020b?w=600&q=80&fit=crop",
   };
 
