@@ -2761,11 +2761,37 @@ function CalendarScreen({
 }
 
 // -------------------------------------------------------------
-// SCREEN 8: HINDSIGHT MEMORY BANK
+// SCREEN 8: HINDSIGHT MEMORY BANK  (data-rich, always populated)
 // -------------------------------------------------------------
+const DEMO_PAST_EXP = [
+  { id: "d1", type: "CROP_HISTORY", source: "Farmer Query", crop: "Tomato",
+    text: "Kharif 2024: Tomato crop suffered 40% yield loss due to leaf curl viral outbreak and severe water deficit during flowering stage. Farmer lost ₹18,000 in that season." },
+  { id: "d2", type: "PEST_OUTBREAK", source: "Community Report", crop: "Soybean",
+    text: "Kharif 2023: Soybean girdle beetle infestation at Day 38. Despite Profenophos spray, 15% pod loss recorded. Late detection cited as primary reason." },
+  { id: "d3", type: "MARKET_OUTCOME", source: "Mandi Record", crop: "Groundnut",
+    text: "Rabi 2024: Groundnut fetched ₹5,480/quintal at Sehore APMC — ₹320 above MSP. Early harvest decision (Day 108) allowed moisture-safe storage and premium pricing." },
+];
+
+const DEMO_LEARNED = [
+  { id: "l1", type: "CONSTRAINT", source: "Hindsight Retain", reason: "Water Table Drop",
+    text: "Borewell motor output restricted to 1 hour/day during peak summer. Farmer must avoid flood-irrigation crops (Paddy, Sugarcane) during severe drought windows." },
+  { id: "l2", type: "SOIL_PROFILE", source: "Soil Health Card", reason: "Nutrient Optimization",
+    text: "Soil test confirms high potassium (K=245 kg/ha) but low sulphur. Staged nitrogen application (split doses) preferred over basal overdose to avoid salt burn." },
+  { id: "l3", type: "PREFERENCE", source: "Farmer Feedback", reason: "Market Timing",
+    text: "Farmer prefers crops with <110 day duration to align with dual-season rotation. Avoids crops requiring more than 2 irrigations per week post-sowing." },
+];
+
+const DEMO_WHAT_CHANGED = [
+  { trigger: "Water Stress Memory", summary: "Switched from Tomato → Black Gram (Urad)",
+    impact: "Saved ₹22,000 in avoided crop loss. Black Gram yielded 6.2 quintals/acre with only 3 irrigations.", date: "Jul 2025" },
+  { trigger: "Pest History Recall", summary: "Added Girdle Beetle early-warning to Soybean advisory",
+    impact: "Farmer began Trichogramma release at Day 20 instead of Day 45. Pest loss reduced from 15% to 2%.", date: "Jun 2025" },
+  { trigger: "Market Timing Learning", summary: "Moved harvest 5 days earlier for Groundnut",
+    impact: "Moisture-safe at 8% → premium APMC rate. Extra ₹4,200 per acre earned vs. previous season.", date: "Nov 2024" },
+];
+
 function MemoryScreen({
   back,
-  navigate,
   memorySummary,
   onOpenTeachModal,
   onResetDemo,
@@ -2778,102 +2804,128 @@ function MemoryScreen({
 }) {
   const [filter, setFilter] = useState<string>("All");
 
-  const pastExp = memorySummary?.sections?.past_experience || [];
-  const learned = memorySummary?.sections?.learned_from_you || [];
-  const constraints = memorySummary?.constraint_memories || [];
-  const whatChanged = memorySummary?.what_changed || [];
+  const pastExp = (memorySummary?.sections?.past_experience?.length ?? 0) > 0
+    ? memorySummary!.sections!.past_experience : DEMO_PAST_EXP;
+  const learned = (memorySummary?.sections?.learned_from_you?.length ?? 0) > 0
+    ? memorySummary!.sections!.learned_from_you : DEMO_LEARNED;
+  const whatChanged = (memorySummary?.what_changed?.length ?? 0) > 0
+    ? memorySummary!.what_changed : DEMO_WHAT_CHANGED;
+
+  const totalMemories = (memorySummary?.memory_count ?? 0) || (pastExp.length + learned.length + whatChanged.length);
+
+  const MemCard = ({ icon, badge, badgeTone, statusLabel, text, meta }: {
+    icon: string; badge: string; badgeTone: "amber" | "green" | "danger" | "neutral";
+    statusLabel: string; text: string; meta: string;
+  }) => (
+    <Card style={{ padding: "14px 16px", marginBottom: 10 }}>
+      <div style={{ display: "flex", gap: 12 }}>
+        <div className="memory-icon"><Icon name={icon} /></div>
+        <div style={{ flex: 1 }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
+            <Badge tone={badgeTone}>{badge}</Badge>
+            <span style={{ fontSize: 9, color: "var(--green)", fontWeight: 800 }}>{statusLabel}</span>
+          </div>
+          <p style={{ margin: "0 0 6px", fontSize: 12, lineHeight: 1.6 }}>{text}</p>
+          <small style={{ color: "var(--muted)", fontSize: 9 }}>{meta}</small>
+        </div>
+      </div>
+    </Card>
+  );
 
   return (
     <div className="screen">
       <Header title="Farm Memories & Hindsight" goBack={back} />
       <div className="screen-intro">
         <div className="screen-heading">What Sarthi remembers</div>
-        <p>
-          Hindsight Vectorize Memory Graph. Personal farm context, prior crop losses, and irrigation
-          constraints retained to prevent repeated mistakes.
-        </p>
+        <p>Hindsight Vectorize Memory Graph — personal farm context, crop loss history, and irrigation constraints retained to prevent repeated mistakes.</p>
       </div>
 
-      <div className="filter-row">
-        {["All", "Past Experience", "Learned From You", "Constraints", "What Changed"].map((cat) => (
-          <button
-            key={cat}
-            className={`filter-btn ${filter === cat ? "active" : ""}`}
-            onClick={() => setFilter(cat)}
-          >
-            {cat}
-          </button>
+      {/* ── Memory Stats Bar ─────────────────────────────────────── */}
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 10, marginBottom: 20 }}>
+        {[
+          { label: "MEMORIES STORED", value: totalMemories, icon: "brain" },
+          { label: "SEASONS TRACKED", value: 3, icon: "calendar" },
+          { label: "SAVINGS ENABLED", value: "₹44K+", icon: "leaf" },
+        ].map((s) => (
+          <Card key={s.label} style={{ padding: "12px 10px", textAlign: "center" }}>
+            <Icon name={s.icon} size={16} color="var(--green)" />
+            <div style={{ fontSize: 18, fontWeight: 800, color: "var(--green-dark)", margin: "4px 0 2px" }}>{s.value}</div>
+            <div style={{ fontSize: 8, color: "var(--muted)", fontWeight: 700, letterSpacing: 0.4 }}>{s.label}</div>
+          </Card>
         ))}
       </div>
 
-      {/* Memory List */}
-      <div className="memory-list" style={{ marginBottom: 20 }}>
-        {(filter === "All" || filter === "Past Experience") &&
-          pastExp.map((m) => (
-            <Card key={m.id || m.text}>
-              <div className="memory-icon">
-                <Icon name="leaf" />
-              </div>
-              <div>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                  <Badge tone="amber">{m.type.toUpperCase()}</Badge>
-                  <span style={{ fontSize: 9, color: "var(--green)", fontWeight: 800 }}>
-                    Hindsight Retained
-                  </span>
-                </div>
-                <p>{m.text}</p>
-                <small>Source: {m.source} {m.crop ? `· Crop: ${m.crop}` : ""}</small>
-              </div>
-            </Card>
-          ))}
-
-        {(filter === "All" || filter === "Learned From You" || filter === "Constraints") &&
-          learned.map((m) => (
-            <Card key={m.id || m.text}>
-              <div className="memory-icon">
-                <Icon name="brain" />
-              </div>
-              <div>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                  <Badge tone="green">{m.type.toUpperCase()}</Badge>
-                  <span style={{ fontSize: 9, color: "var(--green)", fontWeight: 800 }}>
-                    Learned Constraint
-                  </span>
-                </div>
-                <p>{m.text}</p>
-                <small>Source: {m.source} {m.reason ? `· Reason: ${m.reason}` : ""}</small>
-              </div>
-            </Card>
-          ))}
-
-        {filter === "What Changed" &&
-          whatChanged.map((wc, idx) => (
-            <Card key={idx}>
-              <div className="memory-icon">
-                <Icon name="spark" />
-              </div>
-              <div>
-                <Badge tone="green">{wc.trigger}</Badge>
-                <p style={{ fontWeight: 700, margin: "6px 0" }}>{wc.summary}</p>
-                <small style={{ color: "var(--green)" }}>Impact: {wc.impact}</small>
-              </div>
-            </Card>
-          ))}
-
-        {memorySummary?.memory_count === 0 && (
-          <div className="state-box">
-            <p>No memories retained yet for this farmer account. Tap "Teach Sarthi" to record your first farm memory!</p>
-          </div>
-        )}
+      {/* ── Before / After Hindsight ──────────────────────────────── */}
+      <SectionTitle title="Hindsight Impact: Before vs After" />
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 20 }}>
+        <Card style={{ padding: "12px 14px", borderColor: "#f5c6c6", background: "#fff8f8" }}>
+          <div style={{ fontSize: 9, fontWeight: 800, color: "#c94f4f", marginBottom: 6, letterSpacing: 0.5 }}>WITHOUT MEMORY</div>
+          <p style={{ fontSize: 11, lineHeight: 1.5, margin: 0, color: "#7a3c3c" }}>
+            Generic Tomato recommendation. Ignores 1-hr borewell limit & prior leaf curl loss. <b>₹18,000 lost.</b>
+          </p>
+        </Card>
+        <Card style={{ padding: "12px 14px", borderColor: "#b8e2cd", background: "#f0f8f3" }}>
+          <div style={{ fontSize: 9, fontWeight: 800, color: "var(--green)", marginBottom: 6, letterSpacing: 0.5 }}>WITH HINDSIGHT</div>
+          <p style={{ fontSize: 11, lineHeight: 1.5, margin: 0, color: "var(--green-dark)" }}>
+            Recalled water constraint + pest history. Recommended Black Gram. <b>₹22,000 saved.</b>
+          </p>
+        </Card>
       </div>
 
+      {/* ── Filter Row ───────────────────────────────────────────── */}
+      <div className="filter-row">
+        {["All", "Past Experience", "Learned From You", "What Changed"].map((cat) => (
+          <button key={cat} className={`filter-btn ${filter === cat ? "active" : ""}`}
+            onClick={() => setFilter(cat)}>{cat}</button>
+        ))}
+      </div>
+
+      {/* ── Memory Cards ─────────────────────────────────────────── */}
+      <div className="memory-list">
+        {(filter === "All" || filter === "Past Experience") && (pastExp as any[]).map((m: any) => (
+          <MemCard key={m.id} icon="leaf" badge={m.type} badgeTone="amber"
+            statusLabel="Hindsight Retained" text={m.text}
+            meta={`Source: ${m.source}${m.crop ? ` · Crop: ${m.crop}` : ""}`} />
+        ))}
+        {(filter === "All" || filter === "Learned From You") && (learned as any[]).map((m: any) => (
+          <MemCard key={m.id} icon="brain" badge={m.type} badgeTone="green"
+            statusLabel="Learned Constraint" text={m.text}
+            meta={`Source: ${m.source}${m.reason ? ` · Reason: ${m.reason}` : ""}`} />
+        ))}
+      </div>
+
+      {/* ── Memory Evolution Timeline ────────────────────────────── */}
+      {(filter === "All" || filter === "What Changed") && (
+        <>
+          <SectionTitle title="Memory Evolution Timeline" />
+          <div style={{ position: "relative", paddingLeft: 28, marginBottom: 20 }}>
+            <div style={{ position: "absolute", left: 9, top: 4, bottom: 4, width: 2, background: "var(--line)", borderRadius: 1 }} />
+            {(whatChanged as any[]).map((wc: any, idx: number) => (
+              <div key={idx} style={{ position: "relative", marginBottom: 14 }}>
+                <div style={{
+                  position: "absolute", left: -19, top: 4,
+                  width: 12, height: 12, borderRadius: "50%",
+                  background: "var(--green)", border: "2px solid var(--bg)",
+                  boxShadow: "0 0 0 3px rgba(9,107,71,0.2)",
+                }} />
+                <Card style={{ padding: "12px 14px" }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 4 }}>
+                    <Badge tone="green">{wc.trigger}</Badge>
+                    {wc.date && <span style={{ fontSize: 9, color: "var(--muted)", fontWeight: 600 }}>{wc.date}</span>}
+                  </div>
+                  <p style={{ fontWeight: 700, margin: "4px 0", fontSize: 12 }}>{wc.summary}</p>
+                  <small style={{ color: "var(--green)", fontSize: 10 }}>✓ Impact: {wc.impact}</small>
+                </Card>
+              </div>
+            ))}
+          </div>
+        </>
+      )}
+
+      {/* ── Actions ──────────────────────────────────────────────── */}
       <div className="button-grid-2">
-        <Button onClick={onOpenTeachModal}>
-          <Icon name="plus" /> Teach Sarthi
-        </Button>
-        <Button kind="soft" onClick={onResetDemo}>
-          <Icon name="refresh" /> Reset Demo Memories
-        </Button>
+        <Button onClick={onOpenTeachModal}><Icon name="plus" /> Teach Sarthi</Button>
+        <Button kind="soft" onClick={onResetDemo}><Icon name="refresh" /> Reset Demo</Button>
       </div>
     </div>
   );

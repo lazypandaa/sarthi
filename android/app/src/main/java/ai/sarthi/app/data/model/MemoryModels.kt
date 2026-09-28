@@ -30,7 +30,9 @@ data class WhatChangedItem(
     @SerializedName("summary")
     val summary: String,
     @SerializedName("impact")
-    val impact: String
+    val impact: String,
+    @SerializedName("date")
+    val date: String = ""
 )
 
 data class MemorySummaryResponse(
