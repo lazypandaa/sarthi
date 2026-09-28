@@ -44,6 +44,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import ai.sarthi.app.data.model.UserProfile
 import ai.sarthi.app.ui.components.ButtonKind
+import ai.sarthi.app.ui.components.MarkdownText
 import ai.sarthi.app.ui.components.SarthiButton
 import ai.sarthi.app.ui.components.SarthiCard
 import ai.sarthi.app.ui.components.SarthiHeader
@@ -279,12 +280,10 @@ fun VoiceScreen(
 
                         Spacer(modifier = Modifier.height(8.dp))
 
-                        Text(
-                            text = answer,
-                            fontSize = 12.5.sp,
-                            fontWeight = FontWeight.SemiBold,
-                            color = SarthiText,
-                            lineHeight = 17.sp
+                        MarkdownText(
+                            markdown = answer,
+                            baseFontSize = 12.5.sp,
+                            baseColor = SarthiText
                         )
 
                         // Feedback row
